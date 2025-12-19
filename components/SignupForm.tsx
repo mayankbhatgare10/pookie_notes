@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import PixelatedAvatar from './PixelatedAvatar';
@@ -32,6 +33,8 @@ export default function SignupForm() {
     { id: 'rinki', name: 'Rinki', type: 'rinki' as const },
   ];
 
+  const router = useRouter();
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -48,9 +51,16 @@ export default function SignupForm() {
     fileInputRef.current?.click();
   };
 
+  const handleSignup = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Here you would normally validate and create account
+    // For now, just redirect to dashboard
+    router.push('/dashboard');
+  };
+
   const handleGoogleSignup = () => {
     // TODO: Implement Google OAuth
-    console.log('Google signup clicked');
+    router.push('/dashboard');
   };
 
   return (
@@ -208,7 +218,10 @@ export default function SignupForm() {
           </div>
 
           {/* Submit Button */}
-          <button className="w-full py-3 rounded-full bg-[#ffd700] hover:bg-[#ffed4e] border border-black text-black font-bold text-base transition-colors flex items-center justify-center gap-2 mb-3">
+          <button
+            onClick={handleSignup}
+            className="w-full py-3 rounded-full bg-[#ffd700] hover:bg-[#ffed4e] border border-black text-black font-bold text-base transition-colors flex items-center justify-center gap-2 mb-3"
+          >
             Let me in →
           </button>
 

@@ -1,12 +1,21 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 
 export default function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const router = useRouter();
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Here you would normally validate credentials
+    // For now, just redirect to dashboard
+    router.push('/dashboard');
+  };
 
   return (
     <div className="min-h-screen bg-[#fffef0] flex items-center justify-center px-4">
@@ -68,7 +77,10 @@ export default function LoginForm() {
           </div>
 
           {/* Unlock Button - Comic Style */}
-          <button className="w-full py-4 rounded-[32px] bg-[#ffd700] hover:bg-[#ffed4e] border-[3px] border-black text-black font-bold text-base transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] flex items-center justify-center gap-2">
+          <button
+            onClick={handleLogin}
+            className="w-full py-4 rounded-[32px] bg-[#ffd700] hover:bg-[#ffed4e] border-[3px] border-black text-black font-bold text-base transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] flex items-center justify-center gap-2"
+          >
             Unlock →
           </button>
 

@@ -1,8 +1,11 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import NewCollectionModal from './NewCollectionModal';
+import SettingsModal from './SettingsModal';
+import CollectionsGrid from './CollectionsGrid';
 
 // Icon Components
 const FlameIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
@@ -156,13 +159,18 @@ const UserIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
 );
 
 export default function Dashboard() {
+    const router = useRouter();
     const [currentTime, setCurrentTime] = useState(new Date());
     const [showNewCollectionModal, setShowNewCollectionModal] = useState(false);
+    const [showSettingsModal, setShowSettingsModal] = useState(false);
+    const [showCollectionsGrid, setShowCollectionsGrid] = useState(false);
+    const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
     const [showProfileDropdown, setShowProfileDropdown] = useState(false);
     const [showSortDropdown, setShowSortDropdown] = useState(false);
     const [activeTab, setActiveTab] = useState<'all' | 'archived'>('all');
     const [currentThoughtIndex, setCurrentThoughtIndex] = useState(0);
     const [currentMemeIndex, setCurrentMemeIndex] = useState(0);
+    const [showBanner, setShowBanner] = useState(true);
     const profileDropdownRef = useRef<HTMLDivElement>(null);
     const sortDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -244,19 +252,6 @@ export default function Dashboard() {
         <div className="min-h-screen bg-[#f5f4e8] flex">
             {/* Left Sidebar */}
             <div className="w-[280px] bg-[#f5f4e8] px-8 py-8 flex flex-col">
-                {/* Quote of the Day */}
-                <div className="mb-6 bg-[#e8e4d4] rounded-[20px] px-6 py-6">
-                    <h2 className="text-[13px] font-bold leading-tight mb-3 text-black uppercase tracking-wide">
-                        Quote of the Day
-                    </h2>
-                    <p className="text-[12px] text-black leading-relaxed mb-2">
-                        "{thoughts[0].quote}"
-                    </p>
-                    <p className="text-[11px] text-[#666] font-medium text-right">
-                        — {thoughts[0].author}
-                    </p>
-                </div>
-
                 {/* Clock - White Rectangular Box */}
                 <div className="bg-white rounded-[20px] px-6 py-6 mb-6 text-center shadow-sm">
                     <div className="mb-2 flex items-end justify-center gap-1.5">
@@ -274,14 +269,34 @@ export default function Dashboard() {
                     </div>
                 </div>
 
+                {/* Quote of the Day */}
+                <div className="mb-6 bg-[#e8e4d4] rounded-[20px] px-6 py-6">
+                    <h2 className="text-[13px] font-bold leading-tight mb-3 text-black uppercase tracking-wide">
+                        Quote of the Day
+                    </h2>
+                    <p className="text-[12px] text-black leading-relaxed mb-2">
+                        "{thoughts[0].quote}"
+                    </p>
+                    <p className="text-[11px] text-[#666] font-medium text-right">
+                        — {thoughts[0].author}
+                    </p>
+                </div>
+
                 {/* Streak - White Rectangular Box with Full Calendar */}
                 <div className="bg-white rounded-[20px] px-6 py-6 shadow-sm">
-                    <div className="flex items-center justify-between mb-5">
+                    <div className="flex items-center justify-between mb-3">
                         <h3 className="text-[15px] font-bold text-black">Streak</h3>
                         <div className="flex items-center gap-1.5 px-2.5 py-1 bg-[#fff4e6] rounded-full">
                             <FlameIcon className="w-3 h-3 text-orange-500" />
                             <span className="text-[10px] font-semibold text-black">5 Days (Barely)</span>
                         </div>
+                    </div>
+
+                    {/* Month Name */}
+                    <div className="text-center mb-3">
+                        <span className="text-[11px] font-bold text-[#666] uppercase tracking-wide">
+                            {currentTime.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                        </span>
                     </div>
 
                     {/* Calendar Grid - Full Month */}
@@ -293,49 +308,53 @@ export default function Dashboard() {
                             </div>
                         ))}
 
-                        {/* Previous month days (29, 30) */}
-                        <div className="aspect-square rounded-full flex items-center justify-center text-[11px] text-[#ccc] font-medium">
-                            29
-                        </div>
-                        <div className="aspect-square rounded-full flex items-center justify-center text-[11px] text-[#ccc] font-medium">
-                            30
-                        </div>
+                        {/* Calendar Days */}
+                        {(() => {
+                            const today = currentTime.getDate();
+                            const firstDay = new Date(currentTime.getFullYear(), currentTime.getMonth(), 1).getDay();
+                            const daysInMonth = new Date(currentTime.getFullYear(), currentTime.getMonth() + 1, 0).getDate();
+                            const daysInPrevMonth = new Date(currentTime.getFullYear(), currentTime.getMonth(), 0).getDate();
 
-                        {/* Current month days 1-4 */}
-                        {[1, 2, 3, 4].map((num) => (
-                            <div
-                                key={num}
-                                className="aspect-square rounded-full flex items-center justify-center text-[11px] text-black font-semibold"
-                            >
-                                {num}
-                            </div>
-                        ))}
+                            const days = [];
 
-                        {/* Today - Day 5 with yellow circle */}
-                        <div className="aspect-square rounded-full bg-[#ffd700] border-[2.5px] border-black flex items-center justify-center text-[11px] font-bold text-black shadow-[2px_2px_0px_#000]">
-                            5
-                        </div>
+                            // Previous month days
+                            for (let i = firstDay - 1; i >= 0; i--) {
+                                days.push(
+                                    <div key={`prev-${i}`} className="aspect-square rounded-full flex items-center justify-center text-[11px] text-[#ccc] font-medium">
+                                        {daysInPrevMonth - i}
+                                    </div>
+                                );
+                            }
 
-                        {/* Days 6-28 */}
-                        {[6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28].map((num) => (
-                            <div
-                                key={num}
-                                className="aspect-square rounded-full flex items-center justify-center text-[11px] text-black font-semibold"
-                            >
-                                {num}
-                            </div>
-                        ))}
+                            // Current month days
+                            for (let day = 1; day <= daysInMonth; day++) {
+                                if (day === today) {
+                                    days.push(
+                                        <div key={day} className="aspect-square rounded-full bg-[#ffd700] border border-black flex items-center justify-center text-[11px] font-bold text-black shadow-[1px_1px_0px_#000]">
+                                            {day}
+                                        </div>
+                                    );
+                                } else {
+                                    days.push(
+                                        <div key={day} className="aspect-square rounded-full flex items-center justify-center text-[11px] text-black font-semibold">
+                                            {day}
+                                        </div>
+                                    );
+                                }
+                            }
 
-                        {/* Next month days (1, 2, 3) */}
-                        <div className="aspect-square rounded-full flex items-center justify-center text-[11px] text-[#ccc] font-medium">
-                            1
-                        </div>
-                        <div className="aspect-square rounded-full flex items-center justify-center text-[11px] text-[#ccc] font-medium">
-                            2
-                        </div>
-                        <div className="aspect-square rounded-full flex items-center justify-center text-[11px] text-[#ccc] font-medium">
-                            3
-                        </div>
+                            // Next month days to fill the grid
+                            const remainingDays = 42 - days.length; // 6 rows × 7 days
+                            for (let day = 1; day <= remainingDays; day++) {
+                                days.push(
+                                    <div key={`next-${day}`} className="aspect-square rounded-full flex items-center justify-center text-[11px] text-[#ccc] font-medium">
+                                        {day}
+                                    </div>
+                                );
+                            }
+
+                            return days;
+                        })()}
                     </div>
                 </div>
             </div>
@@ -358,9 +377,9 @@ export default function Dashboard() {
 
                     <div className="flex items-center gap-4">
                         <button
-                            onClick={() => setShowNewCollectionModal(true)}
+                            onClick={() => setShowCollectionsGrid(!showCollectionsGrid)}
                             className="p-2.5 hover:bg-[#eae9dd] rounded-lg transition-colors"
-                            title="Candy Box"
+                            title="Collections"
                         >
                             <GridDotsIcon className="w-5 h-5" />
                         </button>
@@ -371,21 +390,54 @@ export default function Dashboard() {
                                 onClick={() => setShowProfileDropdown(!showProfileDropdown)}
                                 className="relative focus:outline-none"
                             >
-                                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#ffd700] to-[#ffed4e] border-2 border-black flex items-center justify-center shadow-sm hover:scale-105 transition-transform">
-                                    <CatIcon className="w-5 h-5 text-black" />
+                                <div className="w-9 h-9 rounded-full border-2 border-black overflow-hidden shadow-sm hover:scale-105 transition-transform bg-white">
+                                    <Image
+                                        src="https://z3759y9was.ufs.sh/f/SFmIfV4reUMkMX05ywI8vZdrHiCNquxPUKI94Og1t6VnfcjG"
+                                        alt="Profile"
+                                        width={36}
+                                        height={36}
+                                        className="object-cover"
+                                        unoptimized
+                                    />
                                 </div>
-                                <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-[#f5f4e8]"></div>
                             </button>
 
                             {showProfileDropdown && (
-                                <div className="absolute right-0 mt-3 w-48 bg-white rounded-xl shadow-lg z-50">
-                                    {/* Menu Items - Only Settings and Logout */}
+                                <div className="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-lg z-50 border border-[#e0e0e0]">
+                                    {/* User Info */}
+                                    <div className="px-4 py-3 border-b border-[#f0f0f0] flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-full border-2 border-black overflow-hidden bg-white flex-shrink-0">
+                                            <Image
+                                                src="https://z3759y9was.ufs.sh/f/SFmIfV4reUMkMX05ywI8vZdrHiCNquxPUKI94Og1t6VnfcjG"
+                                                alt="Profile"
+                                                width={40}
+                                                height={40}
+                                                className="object-cover"
+                                                unoptimized
+                                            />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="font-semibold text-sm text-black truncate">Mayank Bhatgare</p>
+                                            <p className="text-xs text-[#666] mt-0.5 truncate">mayank@pookienotes.com</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Menu Items */}
                                     <div className="py-2">
-                                        <button className="w-full px-4 py-3 text-left text-sm hover:bg-[#f5f4e8] transition-colors flex items-center gap-3">
+                                        <button
+                                            onClick={() => {
+                                                setShowSettingsModal(true);
+                                                setShowProfileDropdown(false);
+                                            }}
+                                            className="w-full px-4 py-2.5 text-left text-sm hover:bg-[#f5f4e8] transition-colors flex items-center gap-3"
+                                        >
                                             <SettingsIcon className="w-4 h-4 text-[#666]" />
                                             <span className="text-black">Settings</span>
                                         </button>
-                                        <button className="w-full px-4 py-3 text-left text-sm hover:bg-[#ffe8e8] transition-colors flex items-center gap-3 text-red-600">
+                                        <button
+                                            onClick={() => router.push('/login')}
+                                            className="w-full px-4 py-2.5 text-left text-sm hover:bg-[#ffe8e8] transition-colors flex items-center gap-3 text-red-600"
+                                        >
                                             <LogoutIcon className="w-4 h-4" />
                                             <span>Log Out</span>
                                         </button>
@@ -398,13 +450,68 @@ export default function Dashboard() {
 
                 {/* Content Area */}
                 <div className="flex-1 overflow-y-auto px-10 py-8 bg-[#f5f4e8]">
+                    {/* Collection Title Banner */}
+                    {selectedCollectionId && (
+                        <div className="mb-6">
+                            <h1 className="text-3xl font-bold text-black flex items-center gap-3">
+                                <span className="text-4xl">
+                                    {(() => {
+                                        const collections = [
+                                            { id: '1', name: 'Movies', emoji: '🎬' },
+                                            { id: '2', name: 'Work', emoji: '💼' },
+                                            { id: '3', name: 'Personal', emoji: '🏠' },
+                                            { id: '4', name: 'Ideas', emoji: '💡' },
+                                            { id: '5', name: 'Travel', emoji: '✈️' },
+                                            { id: '6', name: 'Books', emoji: '📚' },
+                                            { id: '7', name: 'Music', emoji: '🎵' },
+                                            { id: '8', name: 'Recipes', emoji: '🍳' },
+                                            { id: '9', name: 'Fitness', emoji: '💪' },
+                                            { id: '10', name: 'Projects', emoji: '🚀' },
+                                        ];
+                                        const collection = collections.find(c => c.id === selectedCollectionId);
+                                        return collection?.emoji || '📝';
+                                    })()}
+                                </span>
+                                <span>
+                                    {(() => {
+                                        const collections = [
+                                            { id: '1', name: 'Movies', emoji: '🎬' },
+                                            { id: '2', name: 'Work', emoji: '💼' },
+                                            { id: '3', name: 'Personal', emoji: '🏠' },
+                                            { id: '4', name: 'Ideas', emoji: '💡' },
+                                            { id: '5', name: 'Travel', emoji: '✈️' },
+                                            { id: '6', name: 'Books', emoji: '📚' },
+                                            { id: '7', name: 'Music', emoji: '🎵' },
+                                            { id: '8', name: 'Recipes', emoji: '🍳' },
+                                            { id: '9', name: 'Fitness', emoji: '💪' },
+                                            { id: '10', name: 'Projects', emoji: '🚀' },
+                                        ];
+                                        const collection = collections.find(c => c.id === selectedCollectionId);
+                                        return collection?.name || 'Collection';
+                                    })()}
+                                </span>
+                            </h1>
+                        </div>
+                    )}
+
                     {/* Banner with Rotating Memes */}
-                    <div className="bg-[#ffd700] border-2 border-dashed border-black rounded-[20px] px-6 py-4 mb-8 flex items-center gap-3 shadow-sm">
-                        <span className="text-3xl font-bold text-black leading-none">"</span>
-                        <span className="font-semibold text-black text-sm transition-opacity duration-500">
-                            {memes[currentMemeIndex]}
-                        </span>
-                    </div>
+                    {showBanner && (
+                        <div className="bg-[#ffd700] border-2 border-dashed border-black rounded-[20px] px-6 py-4 mb-8 flex items-center gap-3 shadow-sm relative">
+                            <span className="text-3xl font-bold text-black leading-none">"</span>
+                            <span className="font-semibold text-black text-sm transition-opacity duration-500 flex-1">
+                                {memes[currentMemeIndex]}
+                            </span>
+                            <button
+                                onClick={() => setShowBanner(false)}
+                                className="flex-shrink-0 w-6 h-6 rounded-full bg-black hover:bg-gray-800 flex items-center justify-center transition-colors"
+                                title="Close"
+                            >
+                                <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    )}
 
                     {/* Search Bar with Sort and Tabs */}
                     <div className="mb-6">
@@ -471,8 +578,8 @@ export default function Dashboard() {
                                 <button
                                     onClick={() => setActiveTab('archived')}
                                     className={`px-6 py-2 rounded-full font-medium text-sm transition-all flex items-center gap-1.5 ${activeTab === 'archived'
-                                            ? 'bg-white text-black shadow-sm'
-                                            : 'text-[#666] hover:text-black'
+                                        ? 'bg-white text-black shadow-sm'
+                                        : 'text-[#666] hover:text-black'
                                         }`}
                                 >
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -487,260 +594,342 @@ export default function Dashboard() {
                     {/* Content based on active tab */}
                     {activeTab === 'all' ? (
                         <>
-                            {/* Recent Notes */}
-                            <div className="mb-10">
-                                <div className="flex items-center justify-between mb-5">
-                                    <div className="flex items-center gap-2.5">
-                                        <ClockIcon className="w-5 h-5 text-[#a89968]" />
-                                        <h2 className="text-lg font-bold">Recent Notes</h2>
-                                    </div>
-                                    <button className="text-sm text-[#a89968] hover:text-black transition-colors">
-                                        View All
-                                    </button>
-                                </div>
+                            {/* Notes Section - Simple when collection selected */}
+                            {selectedCollectionId ? (
+                                /* Collection Notes - No categorization */
+                                <div className="mb-10">
+                                    <div className="grid grid-cols-4 gap-5">
+                                        {/* New Note Card */}
+                                        <button className="bg-[#fffacd] border-2 border-dashed border-black rounded-[24px] p-8 flex flex-col items-center justify-center cursor-pointer hover:scale-[1.02] transition-transform shadow-[0_8px_20px_rgba(0,0,0,0.08)]">
+                                            <div className="w-14 h-14 rounded-full bg-black flex items-center justify-center mb-4">
+                                                <PlusIcon className="w-8 h-8 text-[#fffacd]" />
+                                            </div>
+                                            <h3 className="font-bold text-black text-base mb-1">New Note!</h3>
+                                            <p className="text-xs text-black/80">Add to this collection.</p>
+                                        </button>
 
-                                <div className="grid grid-cols-4 gap-5">
-                                    {/* New Note Card - Lighter with Dotted Border */}
-                                    <button className="bg-[#fffacd] border-2 border-dashed border-black rounded-[24px] p-8 flex flex-col items-center justify-center cursor-pointer hover:scale-[1.02] transition-transform shadow-[0_8px_20px_rgba(0,0,0,0.08)]">
-                                        <div className="w-14 h-14 rounded-full bg-black flex items-center justify-center mb-4">
-                                            <PlusIcon className="w-8 h-8 text-[#fffacd]" />
-                                        </div>
-                                        <h3 className="font-bold text-black text-base mb-1">New Note!</h3>
-                                        <p className="text-xs text-black/80">Unleash your inner chaos.</p>
-                                    </button>
-
-                                    {/* Sample Cards */}
-                                    {[
-                                        {
-                                            Icon: EnvelopeIcon,
-                                            bg: '#e8d4ff',
-                                            iconColor: '#9b59d6',
-                                            title: 'Meeting notes that could have been an email',
-                                            desc: 'Discussed Q3 goals which are basically just "survive". Also, apparently Brenda needs to stop bringing tuna casserole...',
-                                            time: 'Updated 14:00 PM',
-                                            tag: 'Work',
-                                            tagColor: '#9b59d6',
-                                        },
-                                        {
-                                            Icon: BrainIcon,
-                                            bg: '#ffd4e5',
-                                            iconColor: '#ff6b9d',
-                                            title: 'Therapy Journaling',
-                                            desc: 'Why do I procrastinate until the panic monster arrives? Is it a coping mechanism? Or just pure laziness? Th...',
-                                            time: 'Updated Yesterday',
-                                            tag: 'Self-Care',
-                                            tagColor: '#ff6b9d',
-                                        },
-                                        {
-                                            Icon: CodeIcon,
-                                            bg: '#d4e8ff',
-                                            iconColor: '#4a90e2',
-                                            title: 'CSS Hacks that shouldn\'t work',
-                                            desc: 'Using !important on everything is a lifestyle choice. Also, remember that time I used floats for layout? The horro...',
-                                            time: 'Updated Oct 28',
-                                            tag: 'Code',
-                                            tagColor: '#4a90e2',
-                                        },
-                                    ].map((card, i) => (
-                                        <div
-                                            key={i}
-                                            className="bg-white rounded-[24px] p-6 border border-[#f0f0f0] cursor-pointer shadow-[0_10px_28px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.12)] transition-shadow"
-                                        >
+                                        {/* Sample Collection Notes */}
+                                        {[
+                                            {
+                                                Icon: EnvelopeIcon,
+                                                bg: '#e8d4ff',
+                                                iconColor: '#9b59b6',
+                                                title: 'Collection Note 1',
+                                                desc: 'This is a note in the selected collection...',
+                                                time: 'Updated 1h ago',
+                                                tag: 'Important',
+                                                tagColor: '#9b59b6',
+                                            },
+                                            {
+                                                Icon: RocketIcon,
+                                                bg: '#d4e8ff',
+                                                iconColor: '#4a90e2',
+                                                title: 'Collection Note 2',
+                                                desc: 'Another note in this collection...',
+                                                time: 'Updated 3h ago',
+                                                tag: 'Work',
+                                                tagColor: '#4a90e2',
+                                            },
+                                        ].map((note, idx) => (
                                             <div
-                                                className="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
-                                                style={{ backgroundColor: card.bg }}
+                                                key={idx}
+                                                className="bg-white border-2 border-black rounded-[24px] p-6 cursor-pointer hover:scale-[1.02] transition-transform shadow-[0_8px_20px_rgba(0,0,0,0.08)]"
                                             >
-                                                <card.Icon className="w-6 h-6" style={{ color: card.iconColor }} />
+                                                <div
+                                                    className="w-12 h-12 rounded-full flex items-center justify-center mb-4"
+                                                    style={{ backgroundColor: note.bg }}
+                                                >
+                                                    <note.Icon className="w-6 h-6" style={{ color: note.iconColor }} />
+                                                </div>
+                                                <h3 className="font-bold text-black text-base mb-2 line-clamp-1">{note.title}</h3>
+                                                <p className="text-xs text-black/70 mb-4 line-clamp-3">{note.desc}</p>
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-[10px] text-[#a89968]">{note.time}</span>
+                                                    <span
+                                                        className="text-[9px] font-semibold px-2 py-1 rounded-full"
+                                                        style={{ backgroundColor: note.bg, color: note.tagColor }}
+                                                    >
+                                                        {note.tag}
+                                                    </span>
+                                                </div>
                                             </div>
-                                            <h3 className="font-semibold text-sm mb-2 line-clamp-2 leading-snug">
-                                                {card.title}
-                                            </h3>
-                                            <p className="text-xs text-[#8b8b8b] mb-4 line-clamp-3 leading-relaxed">
-                                                {card.desc}
-                                            </p>
-                                            <div className="flex items-center justify-between text-xs">
-                                                <span className="text-[#a89968]">{card.time}</span>
-                                                <span className="px-2 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: `${card.tagColor}20`, color: card.tagColor }}>
-                                                    {card.tag}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Starred Notes */}
-                            <div className="mb-10">
-                                <div className="flex items-center justify-between mb-5">
-                                    <div className="flex items-center gap-2.5">
-                                        <StarIcon className="w-5 h-5 text-[#a89968]" />
-                                        <h2 className="text-lg font-bold">Starred Notes</h2>
+                                        ))}
                                     </div>
-                                    <button className="text-sm text-[#a89968] hover:text-black transition-colors">
-                                        View All
-                                    </button>
                                 </div>
-
-                                <div className="grid grid-cols-4 gap-5">
-                                    {[
-                                        {
-                                            Icon: RocketIcon,
-                                            bg: '#d4e8ff',
-                                            iconColor: '#4a90e2',
-                                            title: 'World Domination Plans',
-                                            desc: 'Step 1: Get coffee. Step 2: Learn how to code properly. Step 3: Profit? Need to rethink the timeline. Also, recruit more...',
-                                            time: 'Updated 2h ago',
-                                            tag: 'Strategy',
-                                            tagColor: '#4a90e2',
-                                        },
-                                        {
-                                            Icon: CartIcon,
-                                            bg: '#ffe8d4',
-                                            iconColor: '#ff9f43',
-                                            title: 'Grocery List',
-                                            desc: 'Just Dino Nuggies. Maybe some broccoli to look like an adult at the checkout counter. And that fancy...',
-                                            time: 'Updated 5h ago',
-                                            tag: 'Life',
-                                            tagColor: '#ff9f43',
-                                        },
-                                        {
-                                            Icon: TreeIcon,
-                                            bg: '#d4ffe8',
-                                            iconColor: '#26de81',
-                                            title: 'My Top 10 Houseplants',
-                                            desc: 'A definitive ranking of my leafy friends. Spoilers: the one I haven\'t killed yet is number one. P.S. Send help for the...',
-                                            time: 'Updated 1 day ago',
-                                            tag: 'Hobby',
-                                            tagColor: '#26de81',
-                                        },
-                                        {
-                                            Icon: HeartIcon,
-                                            bg: '#ffd4d4',
-                                            iconColor: '#fc5c65',
-                                            title: 'Reasons Why My Cat is a God',
-                                            desc: 'Proof that Mittens is superior to all other life forms. Exhibit A: her purr. Exhibit B: her disdain for my existence....',
-                                            time: 'Updated 3 days ago',
-                                            tag: 'Pets',
-                                            tagColor: '#fc5c65',
-                                        },
-                                    ].map((card, i) => (
-                                        <div
-                                            key={i}
-                                            className="bg-white rounded-[24px] p-6 border border-[#f0f0f0] cursor-pointer shadow-[0_10px_28px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.12)] transition-shadow"
-                                        >
-                                            <div
-                                                className="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
-                                                style={{ backgroundColor: card.bg }}
-                                            >
-                                                <card.Icon className="w-6 h-6" style={{ color: card.iconColor }} />
+                            ) : (
+                                /* All Notes - With categorization */
+                                <>
+                                    {/* Recent Notes */}
+                                    <div className="mb-10">
+                                        <div className="flex items-center justify-between mb-5">
+                                            <div className="flex items-center gap-2.5">
+                                                <ClockIcon className="w-5 h-5 text-[#a89968]" />
+                                                <h2 className="text-lg font-bold">
+                                                    {selectedCollectionId
+                                                        ? (() => {
+                                                            const collections = [
+                                                                { id: '1', name: 'Movies', emoji: '🎬' },
+                                                                { id: '2', name: 'Work', emoji: '💼' },
+                                                                { id: '3', name: 'Personal', emoji: '🏠' },
+                                                                { id: '4', name: 'Ideas', emoji: '💡' },
+                                                                { id: '5', name: 'Travel', emoji: '✈️' },
+                                                            ];
+                                                            const collection = collections.find(c => c.id === selectedCollectionId);
+                                                            return collection ? `${collection.emoji} ${collection.name}` : 'Recent Notes';
+                                                        })()
+                                                        : 'Recent Notes'
+                                                    }
+                                                </h2>
                                             </div>
-                                            <h3 className="font-semibold text-sm mb-2 line-clamp-2 leading-snug">
-                                                {card.title}
-                                            </h3>
-                                            <p className="text-xs text-[#8b8b8b] mb-4 line-clamp-3 leading-relaxed">
-                                                {card.desc}
-                                            </p>
-                                            <div className="flex items-center justify-between text-xs">
-                                                <span className="text-[#a89968]">{card.time}</span>
-                                                <span className="px-2 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: `${card.tagColor}20`, color: card.tagColor }}>
-                                                    {card.tag}
-                                                </span>
-                                            </div>
+                                            <button className="text-sm text-[#a89968] hover:text-black transition-colors">
+                                                View All
+                                            </button>
                                         </div>
-                                    ))}
-                                </div>
-                            </div>
 
-                            {/* Other Notes From Collections */}
-                            <div className="mb-10">
-                                <div className="flex items-center justify-between mb-5">
-                                    <div className="flex items-center gap-2.5">
-                                        <FolderIcon className="w-5 h-5 text-[#a89968]" />
-                                        <h2 className="text-lg font-bold">Other Notes From Collections</h2>
+                                        <div className="grid grid-cols-4 gap-5">
+                                            {/* New Note Card - Lighter with Dotted Border */}
+                                            <button className="bg-[#fffacd] border-2 border-dashed border-black rounded-[24px] p-8 flex flex-col items-center justify-center cursor-pointer hover:scale-[1.02] transition-transform shadow-[0_8px_20px_rgba(0,0,0,0.08)]">
+                                                <div className="w-14 h-14 rounded-full bg-black flex items-center justify-center mb-4">
+                                                    <PlusIcon className="w-8 h-8 text-[#fffacd]" />
+                                                </div>
+                                                <h3 className="font-bold text-black text-base mb-1">New Note!</h3>
+                                                <p className="text-xs text-black/80">Unleash your inner chaos.</p>
+                                            </button>
+
+                                            {/* Sample Cards */}
+                                            {[
+                                                {
+                                                    Icon: EnvelopeIcon,
+                                                    bg: '#e8d4ff',
+                                                    iconColor: '#9b59d6',
+                                                    title: 'Meeting notes that could have been an email',
+                                                    desc: 'Discussed Q3 goals which are basically just "survive". Also, apparently Brenda needs to stop bringing tuna casserole...',
+                                                    time: 'Updated 14:00 PM',
+                                                    tag: 'Work',
+                                                    tagColor: '#9b59d6',
+                                                },
+                                                {
+                                                    Icon: BrainIcon,
+                                                    bg: '#ffd4e5',
+                                                    iconColor: '#ff6b9d',
+                                                    title: 'Therapy Journaling',
+                                                    desc: 'Why do I procrastinate until the panic monster arrives? Is it a coping mechanism? Or just pure laziness? Th...',
+                                                    time: 'Updated Yesterday',
+                                                    tag: 'Self-Care',
+                                                    tagColor: '#ff6b9d',
+                                                },
+                                                {
+                                                    Icon: CodeIcon,
+                                                    bg: '#d4e8ff',
+                                                    iconColor: '#4a90e2',
+                                                    title: 'CSS Hacks that shouldn\'t work',
+                                                    desc: 'Using !important on everything is a lifestyle choice. Also, remember that time I used floats for layout? The horro...',
+                                                    time: 'Updated Oct 28',
+                                                    tag: 'Code',
+                                                    tagColor: '#4a90e2',
+                                                },
+                                            ].map((card, i) => (
+                                                <div
+                                                    key={i}
+                                                    className="bg-white rounded-[24px] p-6 border border-[#f0f0f0] cursor-pointer shadow-[0_10px_28px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.12)] transition-shadow"
+                                                >
+                                                    <div
+                                                        className="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
+                                                        style={{ backgroundColor: card.bg }}
+                                                    >
+                                                        <card.Icon className="w-6 h-6" style={{ color: card.iconColor }} />
+                                                    </div>
+                                                    <h3 className="font-semibold text-sm mb-2 line-clamp-2 leading-snug">
+                                                        {card.title}
+                                                    </h3>
+                                                    <p className="text-xs text-[#8b8b8b] mb-4 line-clamp-3 leading-relaxed">
+                                                        {card.desc}
+                                                    </p>
+                                                    <div className="flex items-center justify-between text-xs">
+                                                        <span className="text-[#a89968]">{card.time}</span>
+                                                        <span className="px-2 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: `${card.tagColor}20`, color: card.tagColor }}>
+                                                            {card.tag}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
-                                    <button className="text-sm text-[#a89968] hover:text-black transition-colors">
-                                        Browse Collections
-                                    </button>
-                                </div>
 
-                                <div className="grid grid-cols-4 gap-5">
-                                    {[
-                                        {
-                                            Icon: AirplaneIcon,
-                                            bg: '#ffe8d4',
-                                            iconColor: '#ff9f43',
-                                            title: 'Dream Vacations I Can\'t Afford',
-                                            desc: 'A list of exotic locales, five-star resorts, and private islands. Currently accepting donations for my "escape reality" fund.',
-                                            collection: 'Wanderlust',
-                                            collectionColor: '#ff9f43',
-                                            tag: 'Travel',
-                                            tagColor: '#ffd700',
-                                        },
-                                        {
-                                            Icon: LightbulbIcon,
-                                            bg: '#d4e8ff',
-                                            iconColor: '#4a90e2',
-                                            title: 'Brilliant Business Ideas (Probably Not)',
-                                            desc: 'Featuring: a coffee shop for cats, an app that finds lost socks, and a professional napper service. Investors, hit me up.',
-                                            collection: 'Brainstorms',
-                                            collectionColor: '#4a90e2',
-                                            tag: 'Ideas',
-                                            tagColor: '#4a90e2',
-                                        },
-                                        {
-                                            Icon: MusicIcon,
-                                            bg: '#ffd4ff',
-                                            iconColor: '#a55eea',
-                                            title: 'My Shameful Guilty Pleasure Playlist',
-                                            desc: 'Includes: 90s boy bands, early 2000s pop-punk, and that one song from a children\'s cartoon. Don\'t judge my...',
-                                            collection: 'Jamz',
-                                            collectionColor: '#a55eea',
-                                            tag: 'Music',
-                                            tagColor: '#a55eea',
-                                        },
-                                        {
-                                            Icon: UtensilsIcon,
-                                            bg: '#d4ffd4',
-                                            iconColor: '#26de81',
-                                            title: 'Recipes I\'ll Never Actually Cook',
-                                            desc: 'Gourmet meals, elaborate desserts, and anything requiring more than 3 ingredients. My diet consists mostly of...',
-                                            collection: 'Foodie Dreams',
-                                            collectionColor: '#26de81',
-                                            tag: 'Cooking',
-                                            tagColor: '#26de81',
-                                        },
-                                    ].map((card, i) => (
-                                        <div
-                                            key={i}
-                                            className="bg-white rounded-[24px] p-6 border border-[#f0f0f0] cursor-pointer shadow-[0_10px_28px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.12)] transition-shadow"
-                                        >
-                                            <div
-                                                className="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
-                                                style={{ backgroundColor: card.bg }}
-                                            >
-                                                <card.Icon className="w-6 h-6" style={{ color: card.iconColor }} />
+                                    {/* Starred Notes */}
+                                    <div className="mb-10">
+                                        <div className="flex items-center justify-between mb-5">
+                                            <div className="flex items-center gap-2.5">
+                                                <StarIcon className="w-5 h-5 text-[#a89968]" />
+                                                <h2 className="text-lg font-bold">Starred Notes</h2>
                                             </div>
-                                            <h3 className="font-semibold text-sm mb-2 line-clamp-2 leading-snug">
-                                                {card.title}
-                                            </h3>
-                                            <p className="text-xs text-[#8b8b8b] mb-4 line-clamp-3 leading-relaxed">
-                                                {card.desc}
-                                            </p>
-                                            <div className="flex items-center justify-between text-xs">
-                                                <span className="text-[#a89968]">Collection: {card.collection}</span>
-                                                <span className="px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: `${card.tagColor}20`, color: card.tagColor }}>
-                                                    {card.tag}
-                                                </span>
-                                            </div>
+                                            <button className="text-sm text-[#a89968] hover:text-black transition-colors">
+                                                View All
+                                            </button>
                                         </div>
-                                    ))}
-                                </div>
-                            </div>
 
-                            {/* Loading More */}
-                            <div className="text-center text-sm text-[#a89968] py-8">
-                                Loading more notes... or just more existential dread.
-                            </div>
+                                        <div className="grid grid-cols-4 gap-5">
+                                            {[
+                                                {
+                                                    Icon: RocketIcon,
+                                                    bg: '#d4e8ff',
+                                                    iconColor: '#4a90e2',
+                                                    title: 'World Domination Plans',
+                                                    desc: 'Step 1: Get coffee. Step 2: Learn how to code properly. Step 3: Profit? Need to rethink the timeline. Also, recruit more...',
+                                                    time: 'Updated 2h ago',
+                                                    tag: 'Strategy',
+                                                    tagColor: '#4a90e2',
+                                                },
+                                                {
+                                                    Icon: CartIcon,
+                                                    bg: '#ffe8d4',
+                                                    iconColor: '#ff9f43',
+                                                    title: 'Grocery List',
+                                                    desc: 'Just Dino Nuggies. Maybe some broccoli to look like an adult at the checkout counter. And that fancy...',
+                                                    time: 'Updated 5h ago',
+                                                    tag: 'Life',
+                                                    tagColor: '#ff9f43',
+                                                },
+                                                {
+                                                    Icon: TreeIcon,
+                                                    bg: '#d4ffe8',
+                                                    iconColor: '#26de81',
+                                                    title: 'My Top 10 Houseplants',
+                                                    desc: 'A definitive ranking of my leafy friends. Spoilers: the one I haven\'t killed yet is number one. P.S. Send help for the...',
+                                                    time: 'Updated 1 day ago',
+                                                    tag: 'Hobby',
+                                                    tagColor: '#26de81',
+                                                },
+                                                {
+                                                    Icon: HeartIcon,
+                                                    bg: '#ffd4d4',
+                                                    iconColor: '#fc5c65',
+                                                    title: 'Reasons Why My Cat is a God',
+                                                    desc: 'Proof that Mittens is superior to all other life forms. Exhibit A: her purr. Exhibit B: her disdain for my existence....',
+                                                    time: 'Updated 3 days ago',
+                                                    tag: 'Pets',
+                                                    tagColor: '#fc5c65',
+                                                },
+                                            ].map((card, i) => (
+                                                <div
+                                                    key={i}
+                                                    className="bg-white rounded-[24px] p-6 border border-[#f0f0f0] cursor-pointer shadow-[0_10px_28px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.12)] transition-shadow"
+                                                >
+                                                    <div
+                                                        className="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
+                                                        style={{ backgroundColor: card.bg }}
+                                                    >
+                                                        <card.Icon className="w-6 h-6" style={{ color: card.iconColor }} />
+                                                    </div>
+                                                    <h3 className="font-semibold text-sm mb-2 line-clamp-2 leading-snug">
+                                                        {card.title}
+                                                    </h3>
+                                                    <p className="text-xs text-[#8b8b8b] mb-4 line-clamp-3 leading-relaxed">
+                                                        {card.desc}
+                                                    </p>
+                                                    <div className="flex items-center justify-between text-xs">
+                                                        <span className="text-[#a89968]">{card.time}</span>
+                                                        <span className="px-2 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: `${card.tagColor}20`, color: card.tagColor }}>
+                                                            {card.tag}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Other Notes From Collections */}
+                                    <div className="mb-10">
+                                        <div className="flex items-center justify-between mb-5">
+                                            <div className="flex items-center gap-2.5">
+                                                <FolderIcon className="w-5 h-5 text-[#a89968]" />
+                                                <h2 className="text-lg font-bold">Other Notes From Collections</h2>
+                                            </div>
+                                            <button className="text-sm text-[#a89968] hover:text-black transition-colors">
+                                                Browse Collections
+                                            </button>
+                                        </div>
+
+                                        <div className="grid grid-cols-4 gap-5">
+                                            {[
+                                                {
+                                                    Icon: AirplaneIcon,
+                                                    bg: '#ffe8d4',
+                                                    iconColor: '#ff9f43',
+                                                    title: 'Dream Vacations I Can\'t Afford',
+                                                    desc: 'A list of exotic locales, five-star resorts, and private islands. Currently accepting donations for my "escape reality" fund.',
+                                                    collection: 'Wanderlust',
+                                                    collectionColor: '#ff9f43',
+                                                    tag: 'Travel',
+                                                    tagColor: '#ffd700',
+                                                },
+                                                {
+                                                    Icon: LightbulbIcon,
+                                                    bg: '#d4e8ff',
+                                                    iconColor: '#4a90e2',
+                                                    title: 'Brilliant Business Ideas (Probably Not)',
+                                                    desc: 'Featuring: a coffee shop for cats, an app that finds lost socks, and a professional napper service. Investors, hit me up.',
+                                                    collection: 'Brainstorms',
+                                                    collectionColor: '#4a90e2',
+                                                    tag: 'Ideas',
+                                                    tagColor: '#4a90e2',
+                                                },
+                                                {
+                                                    Icon: MusicIcon,
+                                                    bg: '#ffd4ff',
+                                                    iconColor: '#a55eea',
+                                                    title: 'My Shameful Guilty Pleasure Playlist',
+                                                    desc: 'Includes: 90s boy bands, early 2000s pop-punk, and that one song from a children\'s cartoon. Don\'t judge my...',
+                                                    collection: 'Jamz',
+                                                    collectionColor: '#a55eea',
+                                                    tag: 'Music',
+                                                    tagColor: '#a55eea',
+                                                },
+                                                {
+                                                    Icon: UtensilsIcon,
+                                                    bg: '#d4ffd4',
+                                                    iconColor: '#26de81',
+                                                    title: 'Recipes I\'ll Never Actually Cook',
+                                                    desc: 'Gourmet meals, elaborate desserts, and anything requiring more than 3 ingredients. My diet consists mostly of...',
+                                                    collection: 'Foodie Dreams',
+                                                    collectionColor: '#26de81',
+                                                    tag: 'Cooking',
+                                                    tagColor: '#26de81',
+                                                },
+                                            ].map((card, i) => (
+                                                <div
+                                                    key={i}
+                                                    className="bg-white rounded-[24px] p-6 border border-[#f0f0f0] cursor-pointer shadow-[0_10px_28px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.12)] transition-shadow"
+                                                >
+                                                    <div
+                                                        className="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
+                                                        style={{ backgroundColor: card.bg }}
+                                                    >
+                                                        <card.Icon className="w-6 h-6" style={{ color: card.iconColor }} />
+                                                    </div>
+                                                    <h3 className="font-semibold text-sm mb-2 line-clamp-2 leading-snug">
+                                                        {card.title}
+                                                    </h3>
+                                                    <p className="text-xs text-[#8b8b8b] mb-4 line-clamp-3 leading-relaxed">
+                                                        {card.desc}
+                                                    </p>
+                                                    <div className="flex items-center justify-between text-xs">
+                                                        <span className="text-[#a89968]">Collection: {card.collection}</span>
+                                                        <span className="px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: `${card.tagColor}20`, color: card.tagColor }}>
+                                                            {card.tag}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Loading More */}
+                                    <div className="text-center text-sm text-[#a89968] py-8">
+                                        Loading more notes... or just more existential dread.
+                                    </div>
+                                </>
+                            )}
                         </>
                     ) : (
                         /* Archived Section */
@@ -761,6 +950,21 @@ export default function Dashboard() {
             <NewCollectionModal
                 isOpen={showNewCollectionModal}
                 onClose={() => setShowNewCollectionModal(false)}
+            />
+
+            {/* Settings Modal */}
+            <SettingsModal
+                isOpen={showSettingsModal}
+                onClose={() => setShowSettingsModal(false)}
+            />
+
+            {/* Collections Grid */}
+            <CollectionsGrid
+                isOpen={showCollectionsGrid}
+                onClose={() => setShowCollectionsGrid(false)}
+                onAddNew={() => setShowNewCollectionModal(true)}
+                onSelectCollection={setSelectedCollectionId}
+                selectedCollectionId={selectedCollectionId}
             />
         </div>
     );

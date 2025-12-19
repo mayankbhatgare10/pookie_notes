@@ -70,12 +70,12 @@ export default function NewCollectionModal({ isOpen, onClose }: NewCollectionMod
                 {/* Title */}
                 <div className="mb-5">
                     <h2 className="text-xl font-bold text-black mb-0.5">Start a Hoard</h2>
-                    <p className="text-xs text-[#d4a574]">Organize your mess, one pixel at a time.</p>
+                    <p className="text-xs text-[#666]">Organize your mess, one pixel at a time.</p>
                 </div>
 
                 {/* Collection Name with Emoji Picker */}
                 <div className="mb-5">
-                    <label className="block text-[9px] font-bold text-[#d4a574] uppercase tracking-wider mb-2">
+                    <label className="block text-[9px] font-bold text-[#666] uppercase tracking-wider mb-2">
                         Collection Name
                     </label>
                     <div className="flex gap-2">
@@ -260,12 +260,9 @@ export default function NewCollectionModal({ isOpen, onClose }: NewCollectionMod
 
                 {/* Footer Text */}
                 <div className="text-center">
-                    <button onClick={onClose} className="text-xs text-[#d4a574] hover:text-black transition-colors mb-1 block w-full">
+                    <button onClick={onClose} className="text-xs text-[#666] hover:text-black transition-colors block w-full">
                         Nevermind, I'll stay disorganized
                     </button>
-                    <p className="text-[8px] text-[#d0d0d0] uppercase tracking-widest font-medium">
-                        Don't forget this one like the others
-                    </p>
                 </div>
             </div>
         </div>
