@@ -462,19 +462,22 @@ export default function Dashboard() {
                                 <button
                                     onClick={() => setActiveTab('all')}
                                     className={`px-6 py-2 rounded-full font-medium text-sm transition-all ${activeTab === 'all'
-                                            ? 'bg-white text-black shadow-sm'
-                                            : 'text-[#666] hover:text-black'
+                                        ? 'bg-white text-black shadow-sm'
+                                        : 'text-[#666] hover:text-black'
                                         }`}
                                 >
                                     All
                                 </button>
                                 <button
                                     onClick={() => setActiveTab('archived')}
-                                    className={`px-6 py-2 rounded-full font-medium text-sm transition-all ${activeTab === 'archived'
+                                    className={`px-6 py-2 rounded-full font-medium text-sm transition-all flex items-center gap-1.5 ${activeTab === 'archived'
                                             ? 'bg-white text-black shadow-sm'
                                             : 'text-[#666] hover:text-black'
                                         }`}
                                 >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                                    </svg>
                                     Archived
                                 </button>
                             </div>
@@ -743,10 +746,8 @@ export default function Dashboard() {
                         /* Archived Section */
                         <div className="text-center py-20">
                             <div className="inline-block bg-white rounded-[20px] px-8 py-12 shadow-sm">
-                                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#f5f4e8] flex items-center justify-center">
-                                    <svg className="w-8 h-8 text-[#a89968]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-                                    </svg>
+                                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#f5f4e8] flex items-center justify-center text-4xl">
+                                    📦
                                 </div>
                                 <h3 className="text-lg font-bold text-black mb-2">No Archived Notes</h3>
                                 <p className="text-sm text-[#a89968]">Your archived notes will appear here.</p>
