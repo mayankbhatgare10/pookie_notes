@@ -6,6 +6,9 @@ import Image from 'next/image';
 import NewCollectionModal from './NewCollectionModal';
 import SettingsModal from './SettingsModal';
 import CollectionsGrid from './CollectionsGrid';
+import NewNoteModal from './NewNoteModal';
+import NoteCard from './NoteCard';
+import NoteEditor from './NoteEditor';
 
 // Icon Components
 const FlameIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
@@ -165,6 +168,9 @@ export default function Dashboard() {
     const [showSettingsModal, setShowSettingsModal] = useState(false);
     const [showCollectionsGrid, setShowCollectionsGrid] = useState(false);
     const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
+    const [showNewNoteModal, setShowNewNoteModal] = useState(false);
+    const [showNoteEditor, setShowNoteEditor] = useState(false);
+    const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
     const [showProfileDropdown, setShowProfileDropdown] = useState(false);
     const [showSortDropdown, setShowSortDropdown] = useState(false);
     const [activeTab, setActiveTab] = useState<'all' | 'archived'>('all');
@@ -197,6 +203,14 @@ export default function Dashboard() {
         "Procrastination koi aadat nahi, lifestyle hai bro.",
         "Zindagi sorted hai, bas sab kuch alag jagah pada hai."
     ];
+
+    // Sample Notes Data
+    const [notes, setNotes] = useState([
+        { id: '1', title: 'World Domination Plans', emoji: '🚀', color: '#d4e8ff', lastEdited: 'Updated 2h ago', isStarred: true, isArchived: false, collectionId: '1', isPrivate: false },
+        { id: '2', title: 'Grocery List', emoji: '🛒', color: '#ffe8d4', lastEdited: 'Updated 5h ago', isStarred: false, isArchived: false, collectionId: null, isPrivate: false },
+        { id: '3', title: 'Movie Ideas', emoji: '🎬', color: '#e8d4ff', lastEdited: 'Updated 1d ago', isStarred: true, isArchived: false, collectionId: '1', isPrivate: false },
+        { id: '4', title: 'Workout Routine', emoji: '💪', color: '#d4ffe8', lastEdited: 'Updated 3d ago', isStarred: false, isArchived: false, collectionId: '2', isPrivate: false },
+    ]);
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -600,7 +614,10 @@ export default function Dashboard() {
                                 <div className="mb-10">
                                     <div className="grid grid-cols-4 gap-5">
                                         {/* New Note Card */}
-                                        <button className="bg-[#fffacd] border-2 border-dashed border-black rounded-[24px] p-8 flex flex-col items-center justify-center cursor-pointer hover:scale-[1.02] transition-transform shadow-[0_8px_20px_rgba(0,0,0,0.08)]">
+                                        <button
+                                            onClick={() => setShowNewNoteModal(true)}
+                                            className="bg-[#fffacd] border-2 border-dashed border-black rounded-[24px] p-8 flex flex-col items-center justify-center cursor-pointer hover:scale-[1.02] transition-transform shadow-[0_8px_20px_rgba(0,0,0,0.08)]"
+                                        >
                                             <div className="w-14 h-14 rounded-full bg-black flex items-center justify-center mb-4">
                                                 <PlusIcon className="w-8 h-8 text-[#fffacd]" />
                                             </div>
@@ -608,52 +625,38 @@ export default function Dashboard() {
                                             <p className="text-xs text-black/80">Add to this collection.</p>
                                         </button>
 
-                                        {/* Sample Collection Notes */}
-                                        {[
-                                            {
-                                                Icon: EnvelopeIcon,
-                                                bg: '#e8d4ff',
-                                                iconColor: '#9b59b6',
-                                                title: 'Collection Note 1',
-                                                desc: 'This is a note in the selected collection...',
-                                                time: 'Updated 1h ago',
-                                                tag: 'Important',
-                                                tagColor: '#9b59b6',
-                                            },
-                                            {
-                                                Icon: RocketIcon,
-                                                bg: '#d4e8ff',
-                                                iconColor: '#4a90e2',
-                                                title: 'Collection Note 2',
-                                                desc: 'Another note in this collection...',
-                                                time: 'Updated 3h ago',
-                                                tag: 'Work',
-                                                tagColor: '#4a90e2',
-                                            },
-                                        ].map((note, idx) => (
-                                            <div
-                                                key={idx}
-                                                className="bg-white border-2 border-black rounded-[24px] p-6 cursor-pointer hover:scale-[1.02] transition-transform shadow-[0_8px_20px_rgba(0,0,0,0.08)]"
-                                            >
-                                                <div
-                                                    className="w-12 h-12 rounded-full flex items-center justify-center mb-4"
-                                                    style={{ backgroundColor: note.bg }}
-                                                >
-                                                    <note.Icon className="w-6 h-6" style={{ color: note.iconColor }} />
-                                                </div>
-                                                <h3 className="font-bold text-black text-base mb-2 line-clamp-1">{note.title}</h3>
-                                                <p className="text-xs text-black/70 mb-4 line-clamp-3">{note.desc}</p>
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-[10px] text-[#a89968]">{note.time}</span>
-                                                    <span
-                                                        className="text-[9px] font-semibold px-2 py-1 rounded-full"
-                                                        style={{ backgroundColor: note.bg, color: note.tagColor }}
-                                                    >
-                                                        {note.tag}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        ))}
+                                        {/* Collection Notes */}
+                                        {notes
+                                            .filter(note => !note.isArchived && note.collectionId === selectedCollectionId)
+                                            .map((note) => (
+                                                <NoteCard
+                                                    key={note.id}
+                                                    id={note.id}
+                                                    title={note.title}
+                                                    emoji={note.emoji}
+                                                    color={note.color}
+                                                    lastEdited={note.lastEdited}
+                                                    isStarred={note.isStarred}
+                                                    onEdit={() => {
+                                                        setEditingNoteId(note.id);
+                                                        setShowNewNoteModal(true);
+                                                    }}
+                                                    onStar={() => {
+                                                        setNotes(notes.map(n =>
+                                                            n.id === note.id ? { ...n, isStarred: !n.isStarred } : n
+                                                        ));
+                                                    }}
+                                                    onArchive={() => {
+                                                        setNotes(notes.map(n =>
+                                                            n.id === note.id ? { ...n, isArchived: true } : n
+                                                        ));
+                                                    }}
+                                                    onDelete={() => {
+                                                        setNotes(notes.filter(n => n.id !== note.id));
+                                                    }}
+                                                    onClick={() => setShowNoteEditor(true)}
+                                                />
+                                            ))}
                                     </div>
                                 </div>
                             ) : (
@@ -688,7 +691,10 @@ export default function Dashboard() {
 
                                         <div className="grid grid-cols-4 gap-5">
                                             {/* New Note Card - Lighter with Dotted Border */}
-                                            <button className="bg-[#fffacd] border-2 border-dashed border-black rounded-[24px] p-8 flex flex-col items-center justify-center cursor-pointer hover:scale-[1.02] transition-transform shadow-[0_8px_20px_rgba(0,0,0,0.08)]">
+                                            <button
+                                                onClick={() => setShowNewNoteModal(true)}
+                                                className="bg-[#fffacd] border-2 border-dashed border-black rounded-[24px] p-8 flex flex-col items-center justify-center cursor-pointer hover:scale-[1.02] transition-transform shadow-[0_8px_20px_rgba(0,0,0,0.08)]"
+                                            >
                                                 <div className="w-14 h-14 rounded-full bg-black flex items-center justify-center mb-4">
                                                     <PlusIcon className="w-8 h-8 text-[#fffacd]" />
                                                 </div>
@@ -965,6 +971,24 @@ export default function Dashboard() {
                 onAddNew={() => setShowNewCollectionModal(true)}
                 onSelectCollection={setSelectedCollectionId}
                 selectedCollectionId={selectedCollectionId}
+            />
+
+            {/* New Note Modal */}
+            <NewNoteModal
+                isOpen={showNewNoteModal}
+                onClose={() => {
+                    setShowNewNoteModal(false);
+                    setEditingNoteId(null);
+                }}
+                selectedCollectionId={selectedCollectionId}
+                editMode={editingNoteId !== null}
+                noteData={editingNoteId ? notes.find(n => n.id === editingNoteId) : undefined}
+            />
+
+            {/* Note Editor */}
+            <NoteEditor
+                isOpen={showNoteEditor}
+                onClose={() => setShowNoteEditor(false)}
             />
         </div>
     );
