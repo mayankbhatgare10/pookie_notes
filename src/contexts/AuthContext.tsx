@@ -87,9 +87,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
         };
 
-        // Add keyboard listener
+        // Intercept ALL refresh attempts (mobile pull-to-refresh, browser button, etc.)
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            // Only intercept if user is logged in and not already pending refresh
+            if (user && !pendingRefresh.current) {
+                console.log('⚠️ Page unload detected - preventing default');
+                // Prevent the default unload behavior
+                e.preventDefault();
+                // Chrome requires returnValue to be set
+                e.returnValue = '';
+
+                // Show our custom modal
+                setShowRefreshModal(true);
+
+                // Return a string to trigger browser's confirmation dialog as fallback
+                return 'Refreshing will log you out. Are you sure?';
+            }
+        };
+
+        // Add event listeners
         if (user) {
             window.addEventListener('keydown', handleKeyDown, true); // Use capture phase
+            window.addEventListener('beforeunload', handleBeforeUnload);
         }
 
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -151,6 +170,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return () => {
             unsubscribe();
             window.removeEventListener('keydown', handleKeyDown, true);
+            window.removeEventListener('beforeunload', handleBeforeUnload);
         };
     }, [user]); // Add user to dependencies so listener updates
 

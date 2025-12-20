@@ -65,16 +65,21 @@ export async function createCollection(
             passwordHash = await bcrypt.hash(collectionData.password, 10);
         }
 
-        const newCollection: Omit<Collection, 'id'> = {
+        // Build collection object, only including passwordHash if it's defined
+        const newCollection: any = {
             userId,
             name: collectionData.name,
             emoji: collectionData.emoji,
             tags: collectionData.tags || [],
             isPrivate: collectionData.isPrivate || false,
-            passwordHash,
             createdAt: now,
             updatedAt: now,
         };
+
+        // Only add passwordHash if it's defined (Firestore doesn't accept undefined values)
+        if (passwordHash !== undefined) {
+            newCollection.passwordHash = passwordHash;
+        }
 
         await setDoc(collectionRef, newCollection);
 
