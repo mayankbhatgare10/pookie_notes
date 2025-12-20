@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import PixelatedAvatar from './PixelatedAvatar';
+import PixelatedAvatar from '@/components/PixelatedAvatar';
 
 export default function SettingsPage() {
     const router = useRouter();
@@ -243,8 +243,8 @@ export default function SettingsPage() {
                     </button>
 
                     {/* Footer */}
-                    <div className="text-center text-xs text-[#a89968] mt-6">
-                        © 2025 Mayank Bhatgare. Your data is safe... probably.
+                    <div className="text-center text-xs text-[#8b7355] mt-8">
+                        © 2025 Crafted by Mayank Bhatgare ❣️ All rights reserved.
                     </div>
                 </div>
             </div>

@@ -2,6 +2,8 @@
 
 import { useRouter } from 'next/navigation';
 
+export const dynamic = 'force-dynamic';
+
 export default function NotFound() {
     const router = useRouter();
 
@@ -130,13 +132,9 @@ export default function NotFound() {
                         Take me back
                     </button>
 
-                    <div style={{
-                        marginTop: '3rem',
-                        fontSize: '1rem',
-                        fontFamily: "'VT323', monospace",
-                        color: '#a89968'
-                    }}>
-                        © 2025 Mayank Bhatgare. Your data is safe... probably.
+                    {/* Footer */}
+                    <div className="text-center text-xs text-[#8b7355] mt-8">
+                        © 2025 Crafted by Mayank Bhatgare ❣️ All rights reserved.
                     </div>
                 </div>
             </div>

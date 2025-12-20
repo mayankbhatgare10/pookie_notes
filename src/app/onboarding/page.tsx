@@ -1,5 +1,5 @@
-import OnboardingForm from '@/components/OnboardingForm';
+import OnboardingPage from '@/page-components/OnboardingPage';
 
-export default function OnboardingPage() {
-    return <OnboardingForm />;
+export default function Onboarding() {
+    return <OnboardingPage />;
 }

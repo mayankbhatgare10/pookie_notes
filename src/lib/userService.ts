@@ -1,6 +1,7 @@
 import { db } from './firebase';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { User } from 'firebase/auth';
+import { initializeDefaultCollections } from './collectionsService';
 
 export interface UserProfile {
     uid: string;
@@ -78,6 +79,9 @@ export async function createUserProfile(
         };
 
         await setDoc(doc(db, 'users', user.uid), userProfile);
+
+        // Initialize default collections for the new user
+        await initializeDefaultCollections(user.uid);
     } catch (error) {
         console.error('Error creating user profile:', error);
         throw error;

@@ -1,5 +1,7 @@
 'use client';
 
+import { useCollections } from '@/hooks/useCollections';
+
 interface Collection {
     id: string;
     name: string;
@@ -21,21 +23,9 @@ export default function CollectionsGrid({
     onSelectCollection,
     selectedCollectionId
 }: CollectionsGridProps) {
-    // Sample collections - TODO: Replace with actual data
-    const collections: Collection[] = [
-        { id: '1', name: 'Movies', emoji: '🎬' },
-        { id: '2', name: 'Work', emoji: '💼' },
-        { id: '3', name: 'Personal', emoji: '🏠' },
-        { id: '4', name: 'Ideas', emoji: '💡' },
-        { id: '5', name: 'Travel', emoji: '✈️' },
-        { id: '6', name: 'Books', emoji: '📚' },
-        { id: '7', name: 'Music', emoji: '🎵' },
-        { id: '8', name: 'Recipes', emoji: '🍳' },
-        { id: '9', name: 'Fitness', emoji: '💪' },
-        { id: '10', name: 'Projects', emoji: '🚀' },
-    ];
+    const { collections, loading } = useCollections();
 
-    // Only show first 11 items (Add New + All Notes + 9 collections) for 3x4 grid
+    // Only show first 10 items for 3x4 grid (Add New + All Notes + 10 collections)
     const displayedCollections = collections.slice(0, 10);
 
     if (!isOpen) return null;
@@ -49,36 +39,36 @@ export default function CollectionsGrid({
             />
 
             {/* Grid Popup */}
-            <div className="fixed top-16 right-10 z-50 w-[320px] bg-white rounded-[20px] border border-[#e0e0e0] shadow-2xl p-6">
+            <div className="fixed top-16 md:top-16 left-1/2 md:left-auto md:right-10 -translate-x-1/2 md:translate-x-0 z-50 w-[90vw] max-w-[320px] md:w-[320px] bg-white rounded-[20px] border border-[#e0e0e0] shadow-2xl p-4 md:p-6">
                 {/* Header */}
-                <div className="flex items-center justify-between mb-5">
-                    <h3 className="text-lg font-bold text-black">Hoards</h3>
+                <div className="flex items-center justify-between mb-4 md:mb-5">
+                    <h3 className="text-base md:text-lg font-bold text-black">Hoards</h3>
                     <button
                         onClick={onClose}
-                        className="w-8 h-8 rounded-full hover:bg-[#f5f4e8] flex items-center justify-center transition-colors"
+                        className="w-7 h-7 md:w-8 md:h-8 rounded-full hover:bg-[#f5f4e8] flex items-center justify-center transition-colors"
                     >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
 
                 {/* Collections Grid - 3x4 strictly */}
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-3 gap-3 md:gap-4">
                     {/* Add New Collection */}
                     <button
                         onClick={() => {
                             onAddNew();
                             onClose();
                         }}
-                        className="aspect-square flex flex-col items-center justify-center gap-2 p-3 rounded-[16px] border-2 border-dashed border-[#d0d0d0] hover:border-[#999] hover:bg-[#f5f5f5] transition-all group"
+                        className="aspect-square flex flex-col items-center justify-center gap-1.5 md:gap-2 p-2 md:p-3 rounded-[14px] md:rounded-[16px] border-2 border-dashed border-[#d0d0d0] hover:border-[#999] hover:bg-[#f5f5f5] transition-all group"
                     >
-                        <div className="w-10 h-10 rounded-full bg-[#f5f4e8] group-hover:bg-[#e0e0e0] flex items-center justify-center transition-colors">
-                            <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-[#f5f4e8] group-hover:bg-[#e0e0e0] flex items-center justify-center transition-colors">
+                            <svg className="w-4 h-4 md:w-5 md:h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
                             </svg>
                         </div>
-                        <span className="text-[10px] font-semibold text-black">Add New</span>
+                        <span className="text-[9px] md:text-[10px] font-semibold text-black">Add New</span>
                     </button>
 
                     {/* All Notes (Default) */}
@@ -87,12 +77,12 @@ export default function CollectionsGrid({
                             onSelectCollection(null);
                             onClose();
                         }}
-                        className="aspect-square flex flex-col items-center justify-center gap-2 p-3 rounded-[16px] border border-[#e0e0e0] hover:border-[#999] hover:bg-[#f5f5f5] transition-all group"
+                        className="aspect-square flex flex-col items-center justify-center gap-1.5 md:gap-2 p-2 md:p-3 rounded-[14px] md:rounded-[16px] border border-[#e0e0e0] hover:border-[#999] hover:bg-[#f5f5f5] transition-all group"
                     >
-                        <div className="text-3xl">
+                        <div className="text-2xl md:text-3xl">
                             📝
                         </div>
-                        <span className="text-[10px] font-semibold text-black">All Notes</span>
+                        <span className="text-[9px] md:text-[10px] font-semibold text-black">All Notes</span>
                     </button>
 
                     {/* Existing Collections - Max 10 for 3x4 grid */}
@@ -103,12 +93,12 @@ export default function CollectionsGrid({
                                 onSelectCollection(collection.id);
                                 onClose();
                             }}
-                            className="aspect-square flex flex-col items-center justify-center gap-2 p-3 rounded-[16px] border border-[#e0e0e0] hover:border-[#999] hover:bg-[#f5f5f5] transition-all group"
+                            className="aspect-square flex flex-col items-center justify-center gap-1.5 md:gap-2 p-2 md:p-3 rounded-[14px] md:rounded-[16px] border border-[#e0e0e0] hover:border-[#999] hover:bg-[#f5f5f5] transition-all group"
                         >
-                            <div className="text-3xl">
+                            <div className="text-2xl md:text-3xl">
                                 {collection.emoji}
                             </div>
-                            <span className="text-[10px] font-semibold text-black truncate w-full text-center">
+                            <span className="text-[9px] md:text-[10px] font-semibold text-black truncate w-full text-center">
                                 {collection.name}
                             </span>
                         </button>
@@ -116,7 +106,7 @@ export default function CollectionsGrid({
                 </div>
 
                 {/* Footer Info */}
-                <div className="mt-5 pt-4 border-t border-[#e0e0e0]">
+                <div className="mt-4 md:mt-5 pt-3 md:pt-4 border-t border-[#e0e0e0]">
                     <p className="text-xs text-[#666] text-center">
                         {collections.length} hoard{collections.length !== 1 ? 's' : ''}
                     </p>

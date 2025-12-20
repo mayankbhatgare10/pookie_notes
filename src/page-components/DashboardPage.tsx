@@ -1,19 +1,20 @@
 'use client';
 
 import { useState } from 'react';
-import NewCollectionModal from './NewCollectionModal';
-import SettingsModal from './SettingsModal';
-import CollectionsGrid from './CollectionsGrid';
-import NewNoteModal from './NewNoteModal';
-import NoteEditor from './NoteEditor';
-import MoveNoteModal from './MoveNoteModal';
+import NewCollectionModal from '@/components/NewCollectionModal';
+import SettingsModal from '@/components/SettingsModal';
+import CollectionsGrid from '@/components/CollectionsGrid';
+import NewNoteModal from '@/components/NewNoteModal';
+import NoteEditor from '@/components/NoteEditor';
+import MoveNoteModal from '@/components/MoveNoteModal';
 import Sidebar from '@/components/dashboard/Sidebar';
 import DashboardHeader from '@/components/dashboard/Header';
 import Banner from '@/components/dashboard/Banner';
 import SearchBar from '@/components/dashboard/SearchBar';
 import NotesSection from '@/components/dashboard/NotesSection';
+import Loader from '@/components/Loader';
 import { useNotes, Note } from '@/hooks/useNotes';
-import { COLLECTIONS } from '@/utils/constants';
+import { useCollections } from '@/hooks/useCollections';
 
 export default function Dashboard() {
     const [showNewCollectionModal, setShowNewCollectionModal] = useState(false);
@@ -32,17 +33,24 @@ export default function Dashboard() {
     const [noteToMoveId, setNoteToMoveId] = useState<string | null>(null);
 
     const {
-        notes, handleCreateNote, handleSaveNote, handleDeleteNote,
+        notes, loading: notesLoading, handleCreateNote, handleSaveNote, handleDeleteNote,
         handleStarNote, handleArchiveNote, handleMoveToCollection
     } = useNotes();
+
+    const { collections, loading: collectionsLoading } = useCollections();
+
+    // Show loader while initial data is loading
+    if (notesLoading || collectionsLoading) {
+        return <Loader />;
+    }
 
     const onOpenNote = (note: Note) => {
         setCurrentNote(note);
         setShowNoteEditor(true);
     };
 
-    const handleCreate = (noteData: any) => {
-        const newNote = handleCreateNote(noteData);
+    const handleCreate = async (noteData: any) => {
+        const newNote = await handleCreateNote(noteData);
         setCurrentNote(newNote);
         setShowNoteEditor(true);
         setShowNewNoteModal(false);
@@ -56,7 +64,7 @@ export default function Dashboard() {
         }
     };
 
-    const collection = COLLECTIONS.find(c => c.id === selectedCollectionId);
+    const collection = collections.find(c => c.id === selectedCollectionId);
 
     return (
         <div className="min-h-screen bg-[#f5f4e8] flex flex-col md:flex-row animate-fade-in">
@@ -147,7 +155,7 @@ export default function Dashboard() {
                 note={currentNote}
                 onSave={handleSaveNote}
                 onDelete={handleDeleteNote}
-                collectionTags={selectedCollectionId ? COLLECTIONS.find(c => c.id === selectedCollectionId)?.tags || [] : []}
+                collectionTags={selectedCollectionId ? collections.find(c => c.id === selectedCollectionId)?.tags || [] : []}
             />
 
             <MoveNoteModal

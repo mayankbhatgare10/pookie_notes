@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import { COLLECTIONS } from '@/utils/constants';
+import { useCollections } from '@/hooks/useCollections';
 
 interface MoveNoteModalProps {
     isOpen: boolean;
@@ -12,6 +12,7 @@ interface MoveNoteModalProps {
 
 export default function MoveNoteModal({ isOpen, onClose, onMove }: MoveNoteModalProps) {
     const [targetCollection, setTargetCollection] = useState<string | null>(null);
+    const { collections } = useCollections();
 
     if (!isOpen) return null;
 
@@ -27,7 +28,7 @@ export default function MoveNoteModal({ isOpen, onClose, onMove }: MoveNoteModal
                     className="w-full px-4 py-3 border-2 border-black/10 rounded-xl mb-6 focus:outline-none focus:border-[#ffd700]"
                 >
                     <option value="">No Collection</option>
-                    {COLLECTIONS.map((collection) => (
+                    {collections.map((collection) => (
                         <option key={collection.id} value={collection.id}>
                             {collection.emoji} {collection.name}
                         </option>

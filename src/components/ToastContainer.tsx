@@ -60,7 +60,25 @@ function Toast({ toast }: ToastProps) {
 }
 
 export default function ToastContainer() {
-    const { toasts } = useToast();
+    const { toasts, showToast } = useToast();
+
+    // Listen for logout toast events
+    useEffect(() => {
+        const handleLogoutToast = (event: CustomEvent) => {
+            const message = event.detail?.message;
+            console.log('📬 Toast event received:', message);
+            if (message) {
+                showToast(message, 'warning');
+            }
+        };
+
+        console.log('👂 ToastContainer listening for logout events');
+        window.addEventListener('show-logout-toast', handleLogoutToast as EventListener);
+
+        return () => {
+            window.removeEventListener('show-logout-toast', handleLogoutToast as EventListener);
+        };
+    }, [showToast]);
 
     if (toasts.length === 0) return null;
 

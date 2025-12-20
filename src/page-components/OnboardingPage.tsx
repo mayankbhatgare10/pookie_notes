@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import PixelatedAvatar from './PixelatedAvatar';
+import PixelatedAvatar from '@/components/PixelatedAvatar';
 import { useAuth } from '@/contexts/AuthContext';
 import { createUserProfile } from '@/lib/userService';
 
@@ -95,24 +95,24 @@ export default function OnboardingForm() {
                 onChange={handleFileUpload}
             />
 
-            {/* Header */}
-            <div className="w-full px-8 py-6 flex justify-center items-center animate-slide-down">
-                <div className="flex items-center gap-3">
-                    <Image
-                        src="https://z3759y9was.ufs.sh/f/SFmIfV4reUMkMX05ywI8vZdrHiCNquxPUKI94Og1t6VnfcjG"
-                        alt="Pookie Notes Logo"
-                        width={32}
-                        height={32}
-                        className="object-contain"
-                        unoptimized
-                    />
-                    <span className="text-2xl font-bold text-[#2d5016]">Pookie Notes</span>
-                </div>
-            </div>
-
             {/* Main Content - Centered */}
             <div className="flex-1 flex items-center justify-center px-6 py-8">
                 <div className="w-full max-w-md animate-scale-in">
+                    {/* Logo */}
+                    <div className="flex justify-center mb-6 animate-slide-down">
+                        <div className="flex items-center gap-2 md:gap-3">
+                            <Image
+                                src="https://z3759y9was.ufs.sh/f/SFmIfV4reUMkMX05ywI8vZdrHiCNquxPUKI94Og1t6VnfcjG"
+                                alt="Pookie Notes Logo"
+                                width={32}
+                                height={32}
+                                className="object-contain md:w-10 md:h-10"
+                                unoptimized
+                            />
+                            <span className="text-2xl md:text-3xl font-bold text-[#2d5016]">Pookie Notes</span>
+                        </div>
+                    </div>
+
                     {/* Title */}
                     <div className="text-center mb-6">
                         <h1 className="text-3xl font-bold text-[#2d5016] mb-2">Welcome, Pookie! 👋</h1>
@@ -213,7 +213,7 @@ export default function OnboardingForm() {
 
                     {/* Footer */}
                     <div className="text-center text-xs text-[#8b7355] pb-6 mt-6">
-                        © 2025 Mayank Bhatgare. We're judging you quietly.
+                        © 2025 Crafted by Mayank Bhatgare ❣️ All rights reserved.
                     </div>
                 </div>
             </div>

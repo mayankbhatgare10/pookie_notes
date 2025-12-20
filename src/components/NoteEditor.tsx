@@ -43,7 +43,8 @@ export default function NoteEditor({ isOpen, onClose, note, onSave, onDelete, co
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [isCanvasDrawing, setIsCanvasDrawing] = useState(false);
 
-    const availableTags = collectionTags.length > 0 ? collectionTags : ['Romance', 'Thriller', 'Action', 'Comedy', 'Drama', 'Horror', 'Sci-Fi', 'Anime'];
+    // Only show tags if the note belongs to a collection that has tags
+    const availableTags = collectionTags || [];
 
     const editor = useEditor({
         extensions: [
@@ -139,18 +140,18 @@ export default function NoteEditor({ isOpen, onClose, note, onSave, onDelete, co
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-            <div className="bg-gradient-to-br from-[#fffef5] to-[#f5f4e8] rounded-[32px] w-full max-w-5xl max-h-[92vh] shadow-2xl flex flex-col border-2 border-black/5 animate-in zoom-in-95 duration-300">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-2 md:p-4 animate-in fade-in duration-200">
+            <div className="bg-gradient-to-br from-[#fffef5] to-[#f5f4e8] rounded-[20px] md:rounded-[32px] w-full max-w-5xl max-h-[95vh] md:max-h-[92vh] shadow-2xl flex flex-col border-2 border-black/5 animate-in zoom-in-95 duration-300">
                 {/* Header */}
-                <div className="flex items-center justify-between px-8 py-5 border-b-2 border-black/5 bg-white/50 backdrop-blur-sm rounded-t-[30px]">
+                <div className="flex items-center justify-between px-4 md:px-8 py-3 md:py-5 border-b-2 border-black/5 bg-white/50 backdrop-blur-sm rounded-t-[18px] md:rounded-t-[30px]">
                     <input
                         type="text"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                         placeholder="Give it a cool name..."
-                        className="text-2xl font-bold text-black bg-transparent focus:outline-none w-80 placeholder:text-black/30"
+                        className="text-lg md:text-2xl font-bold text-black bg-transparent focus:outline-none w-full max-w-[200px] md:max-w-[320px] placeholder:text-black/30"
                     />
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 md:gap-2">
                         <button
                             onClick={() => {
                                 if (isEditing && note && onSave) {
@@ -160,12 +161,12 @@ export default function NoteEditor({ isOpen, onClose, note, onSave, onDelete, co
                                     setIsEditing(true);
                                 }
                             }}
-                            className="px-5 py-2.5 bg-[#ffd700] hover:bg-[#ffed4e] text-black font-bold text-sm rounded-2xl transition-colors shadow-md flex items-center gap-2"
+                            className="px-3 md:px-5 py-1.5 md:py-2.5 bg-[#ffd700] hover:bg-[#ffed4e] text-black font-bold text-xs md:text-sm rounded-xl md:rounded-2xl transition-colors shadow-md flex items-center gap-1 md:gap-2"
                         >
                             {isEditing ? 'Save' : 'Edit'}
                         </button>
 
-                        <div className="relative">
+                        <div className="relative hidden md:block">
                             <button ref={setExportButtonRef} onClick={() => setShowExportMenu(true)} className="p-2.5 hover:bg-black/5 rounded-xl transition-colors">
                                 <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -181,13 +182,13 @@ export default function NoteEditor({ isOpen, onClose, note, onSave, onDelete, co
                             />
                         </div>
 
-                        <button onClick={() => { if (note && onDelete) onDelete(note.id); }} className="p-2.5 hover:bg-red-50 text-red-500 rounded-xl transition-colors">
+                        <button onClick={() => { if (note && onDelete) onDelete(note.id); }} className="p-1.5 md:p-2.5 hover:bg-red-50 text-red-500 rounded-xl transition-colors hidden md:block">
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
                         </button>
-                        <button onClick={onClose} className="p-2.5 hover:bg-black/5 rounded-xl transition-colors">
-                            <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <button onClick={onClose} className="p-1.5 md:p-2.5 hover:bg-black/5 rounded-xl transition-colors">
+                            <svg className="w-4 h-4 md:w-5 md:h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </button>
@@ -205,14 +206,14 @@ export default function NoteEditor({ isOpen, onClose, note, onSave, onDelete, co
 
                 {/* Quick Tags */}
                 {availableTags.length > 0 && (
-                    <div className="px-8 py-4 bg-gradient-to-r from-white/50 to-white/30 backdrop-blur-sm border-b-2 border-black/5">
-                        <div className="flex items-center gap-3 flex-wrap">
-                            <span className="text-sm font-bold text-black/60">Quick Tags:</span>
+                    <div className="px-4 md:px-8 py-3 md:py-4 bg-gradient-to-r from-white/50 to-white/30 backdrop-blur-sm border-b-2 border-black/5">
+                        <div className="flex items-center gap-2 md:gap-3 flex-wrap">
+                            <span className="text-xs md:text-sm font-bold text-black/60">Quick Tags:</span>
                             {availableTags.map((tag) => (
                                 <button
                                     key={tag}
                                     onClick={() => editor?.chain().focus().insertContent({ type: 'tag', attrs: { label: tag } }).run()}
-                                    className="px-4 py-2 text-sm bg-white hover:bg-[#f5f4e8] text-black/70 font-medium rounded-full transition-colors border border-black/10 hover:border-[#ffd700]"
+                                    className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm bg-white hover:bg-[#f5f4e8] text-black/70 font-medium rounded-full transition-colors border border-black/10 hover:border-[#ffd700]"
                                 >
                                     {tag}
                                 </button>
@@ -222,10 +223,10 @@ export default function NoteEditor({ isOpen, onClose, note, onSave, onDelete, co
                 )}
 
                 {/* Editor Area */}
-                <div className="flex-1 overflow-y-auto px-10 py-8 bg-white relative">
+                <div className="flex-1 overflow-y-auto px-4 md:px-10 py-4 md:py-8 bg-white relative">
                     <div className="max-w-4xl mx-auto">
                         {isDrawing && (
-                            <div className="mb-4 p-4 bg-[#fffef5] rounded-2xl border-2 border-[#ffd700]">
+                            <div className="mb-4 p-3 md:p-4 bg-[#fffef5] rounded-xl md:rounded-2xl border-2 border-[#ffd700]">
                                 <canvas
                                     ref={canvasRef}
                                     width={800} height={200}
@@ -242,12 +243,12 @@ export default function NoteEditor({ isOpen, onClose, note, onSave, onDelete, co
                     </div>
                 </div>
 
-                <div className="px-8 py-4 border-t-2 border-black/5 flex items-center justify-between bg-white/70 backdrop-blur-sm rounded-b-[30px]">
-                    <div className="flex items-center gap-6">
-                        <span className="flex items-center gap-2 text-sm"><span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span><span className="font-medium text-black/60">Auto-saved</span></span>
-                        <span className="text-sm text-black/60 font-medium">{wordCount} words</span>
+                <div className="px-4 md:px-8 py-3 md:py-4 border-t-2 border-black/5 flex items-center justify-between bg-white/70 backdrop-blur-sm rounded-b-[18px] md:rounded-b-[30px]">
+                    <div className="flex items-center gap-3 md:gap-6">
+                        <span className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm"><span className="w-1.5 h-1.5 md:w-2 md:h-2 bg-green-500 rounded-full animate-pulse"></span><span className="font-medium text-black/60">Auto-saved</span></span>
+                        <span className="text-xs md:text-sm text-black/60 font-medium">{wordCount} words</span>
                     </div>
-                    <span className="text-sm text-black/40 font-medium">Press / for commands</span>
+                    <span className="text-xs md:text-sm text-black/40 font-medium hidden md:inline">Press / for commands</span>
                 </div>
             </div>
         </div>

@@ -120,7 +120,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             />
 
             {/* Modal */}
-            <div className="fixed right-0 top-0 h-full w-[420px] bg-white shadow-2xl z-[70] overflow-y-auto animate-slide-left">
+            <div className="fixed right-0 md:right-0 bottom-0 md:top-0 md:bottom-auto h-[85vh] md:h-full w-full md:w-[420px] bg-white shadow-2xl z-[70] overflow-y-auto animate-slide-up md:animate-slide-left rounded-t-[24px] md:rounded-none">
                 {/* Hidden file input */}
                 <input
                     ref={fileInputRef}
@@ -131,32 +131,32 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 />
 
                 {/* Header */}
-                <div className="sticky top-0 bg-white border-b border-[#e0e0e0] px-6 py-5 flex items-center justify-between z-10">
-                    <div className="flex items-center gap-3">
+                <div className="sticky top-0 bg-white border-b border-[#e0e0e0] px-4 md:px-6 py-4 md:py-5 flex items-center justify-between z-10">
+                    <div className="flex items-center gap-2 md:gap-3">
                         {isEditing && (
                             <button
                                 onClick={() => setIsEditing(false)}
-                                className="w-8 h-8 rounded-full hover:bg-[#f5f4e8] flex items-center justify-center transition-colors"
+                                className="w-7 h-7 md:w-8 md:h-8 rounded-full hover:bg-[#f5f4e8] flex items-center justify-center transition-colors"
                             >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                                 </svg>
                             </button>
                         )}
-                        <h2 className="text-xl font-bold text-black">Profile Settings</h2>
+                        <h2 className="text-lg md:text-xl font-bold text-black">Profile Settings</h2>
                     </div>
                     <button
                         onClick={onClose}
-                        className="w-8 h-8 rounded-full hover:bg-[#f5f4e8] flex items-center justify-center transition-colors"
+                        className="w-7 h-7 md:w-8 md:h-8 rounded-full hover:bg-[#f5f4e8] flex items-center justify-center transition-colors"
                     >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
 
                 {/* Content */}
-                <div className="p-6">
+                <div className="p-4 md:p-6">
                     {!isEditing ? (
                         /* View Mode - Preview */
                         <>

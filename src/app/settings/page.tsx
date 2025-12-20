@@ -1,4 +1,4 @@
-import SettingsPage from '@/components/SettingsPage';
+import SettingsPage from '@/page-components/SettingsPage';
 
 export default function Settings() {
     return <SettingsPage />;

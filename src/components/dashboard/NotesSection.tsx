@@ -146,69 +146,75 @@ export default function NotesSection({
                 </div>
             </div>
 
-            <div className="mb-10">
-                <div className="flex items-center justify-between mb-5">
-                    <div className="flex items-center gap-2.5">
-                        <StarIcon className="w-5 h-5 text-[#a89968]" />
-                        <h2 className="text-lg font-bold">Starred Notes</h2>
+            {/* Starred Notes - Only show if there are starred notes */}
+            {notes.filter(note => !note.isArchived && note.isStarred).length > 0 && (
+                <div className="mb-10">
+                    <div className="flex items-center justify-between mb-5">
+                        <div className="flex items-center gap-2.5">
+                            <StarIcon className="w-5 h-5 text-[#a89968]" />
+                            <h2 className="text-lg font-bold">Starred Notes</h2>
+                        </div>
+                        <button className="text-sm text-[#a89968] hover:text-black transition-colors">View All</button>
                     </div>
-                    <button className="text-sm text-[#a89968] hover:text-black transition-colors">View All</button>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
+                        {notes
+                            .filter(note => !note.isArchived && note.isStarred)
+                            .slice(0, 4)
+                            .map(note => (
+                                <NoteCard
+                                    key={note.id}
+                                    id={note.id}
+                                    title={note.title}
+                                    content={note.content}
+                                    color={note.color}
+                                    lastEdited={note.lastEdited}
+                                    isStarred={note.isStarred}
+                                    onEdit={() => onEditNote(note)}
+                                    onStar={() => onStarNote(note.id)}
+                                    onArchive={() => onArchiveNote(note.id)}
+                                    onDelete={() => onDeleteNote(note.id)}
+                                    onMove={() => onMoveNote(note.id)}
+                                    onClick={() => onEditNote(note)}
+                                />
+                            ))}
+                    </div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
-                    {notes
-                        .filter(note => !note.isArchived && note.isStarred)
-                        .slice(0, 4)
-                        .map(note => (
-                            <NoteCard
-                                key={note.id}
-                                id={note.id}
-                                title={note.title}
-                                content={note.content}
-                                color={note.color}
-                                lastEdited={note.lastEdited}
-                                isStarred={note.isStarred}
-                                onEdit={() => onEditNote(note)}
-                                onStar={() => onStarNote(note.id)}
-                                onArchive={() => onArchiveNote(note.id)}
-                                onDelete={() => onDeleteNote(note.id)}
-                                onMove={() => onMoveNote(note.id)}
-                                onClick={() => onEditNote(note)}
-                            />
-                        ))}
-                </div>
-            </div>
+            )}
 
-            <div className="mb-10">
-                <div className="flex items-center justify-between mb-5">
-                    <div className="flex items-center gap-2.5">
-                        <FolderIcon className="w-5 h-5 text-[#a89968]" />
-                        <h2 className="text-lg font-bold">Other Notes From Collections</h2>
+            {/* Other Notes From Collections - Only show if there are notes in collections */}
+            {notes.filter(note => !note.isArchived && note.collectionId !== null).length > 0 && (
+                <div className="mb-10">
+                    <div className="flex items-center justify-between mb-5">
+                        <div className="flex items-center gap-2.5">
+                            <FolderIcon className="w-5 h-5 text-[#a89968]" />
+                            <h2 className="text-lg font-bold">Other Notes From Collections</h2>
+                        </div>
+                        <button className="text-sm text-[#a89968] hover:text-black transition-colors">Browse Collections</button>
                     </div>
-                    <button className="text-sm text-[#a89968] hover:text-black transition-colors">Browse Collections</button>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
+                        {notes
+                            .filter(note => !note.isArchived && note.collectionId !== null)
+                            .slice(0, 4)
+                            .map(note => (
+                                <NoteCard
+                                    key={note.id}
+                                    id={note.id}
+                                    title={note.title}
+                                    content={note.content}
+                                    color={note.color}
+                                    lastEdited={note.lastEdited}
+                                    isStarred={note.isStarred}
+                                    onEdit={() => onEditNote(note)}
+                                    onStar={() => onStarNote(note.id)}
+                                    onArchive={() => onArchiveNote(note.id)}
+                                    onDelete={() => onDeleteNote(note.id)}
+                                    onMove={() => onMoveNote(note.id)}
+                                    onClick={() => onEditNote(note)}
+                                />
+                            ))}
+                    </div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
-                    {notes
-                        .filter(note => !note.isArchived && note.collectionId !== null)
-                        .slice(0, 4)
-                        .map(note => (
-                            <NoteCard
-                                key={note.id}
-                                id={note.id}
-                                title={note.title}
-                                content={note.content}
-                                color={note.color}
-                                lastEdited={note.lastEdited}
-                                isStarred={note.isStarred}
-                                onEdit={() => onEditNote(note)}
-                                onStar={() => onStarNote(note.id)}
-                                onArchive={() => onArchiveNote(note.id)}
-                                onDelete={() => onDeleteNote(note.id)}
-                                onMove={() => onMoveNote(note.id)}
-                                onClick={() => onEditNote(note)}
-                            />
-                        ))}
-                </div>
-            </div>
+            )}
         </>
     );
 }

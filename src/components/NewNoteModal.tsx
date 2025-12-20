@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useToast } from '@/contexts/ToastContext';
+import { useCollections } from '@/hooks/useCollections';
 
 interface NewNoteModalProps {
     isOpen: boolean;
@@ -19,6 +20,7 @@ export default function NewNoteModal({
     editMode = false
 }: NewNoteModalProps) {
     const { showToast } = useToast();
+    const { collections } = useCollections();
     const [title, setTitle] = useState('');
     const [selectedColor, setSelectedColor] = useState('#e8d4ff');
     const [selectedCollection, setSelectedCollection] = useState(selectedCollectionId || null);
@@ -39,14 +41,6 @@ export default function NewNoteModal({
         { name: 'Mint', value: '#d4fff4' },
     ];
 
-    const collections = [
-        { id: '1', name: 'Movies', emoji: '🎬' },
-        { id: '2', name: 'Work', emoji: '💼' },
-        { id: '3', name: 'Personal', emoji: '🏠' },
-        { id: '4', name: 'Ideas', emoji: '💡' },
-        { id: '5', name: 'Travel', emoji: '✈️' },
-    ];
-
     const handleCreate = () => {
         if (!title.trim()) {
             showToast('Please enter a note title! Even "Untitled" needs a title. 📝', 'warning');
@@ -58,6 +52,14 @@ export default function NewNoteModal({
             collectionId: selectedCollection,
             isPrivate,
         });
+
+        // Reset form after creation
+        setTitle('');
+        setSelectedColor('#e8d4ff');
+        setSelectedCollection(selectedCollectionId || null);
+        setIsPrivate(false);
+        setPassword('');
+        setConfirmPassword('');
     };
 
     if (!isOpen) return null;

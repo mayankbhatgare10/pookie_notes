@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useRef, ReactNode } from 'react';
 import {
     User,
     signInWithEmailAndPassword,
@@ -12,6 +12,9 @@ import {
 } from 'firebase/auth';
 import { auth, googleProvider } from '@/lib/firebase';
 import { checkUserExists, createUserProfile } from '@/lib/userService';
+import Loader from '@/components/Loader';
+import RefreshConfirmModal from '@/components/RefreshConfirmModal';
+import { useRouter } from 'next/navigation';
 
 interface AuthContextType {
     user: User | null;
@@ -37,10 +40,31 @@ const AuthContext = createContext<AuthContextType>({
 
 export const useAuth = () => useContext(AuthContext);
 
+// Session storage key
+const SESSION_KEY = 'pookie_session_active';
+
+// Sarcastic logout messages
+const SARCASTIC_MESSAGES = [
+    "Did you really just refresh? Rookie mistake! 🙄 Login again, genius.",
+    "Oh great, you refreshed. Now I have trust issues. Login again! 😤",
+    "Refresh = Logout. It's not rocket science! Try logging in again. 🚀",
+    "You refreshed? Bold move. Now login again, smarty pants! 🤓",
+    "Congrats! You discovered the logout button... I mean refresh. Login again! 🎉",
+    "Refresh detected! Your session said 'peace out'. Login time! ✌️",
+    "Did you think refreshing would work? Cute. Login again! 💅",
+    "You refreshed. I logged you out. We're even. Now login! ⚖️",
+    "Refresh = Trust broken. Login again to rebuild our relationship! 💔",
+    "Oh look, someone hit F5! Now hit that login button again. 🔄"
+];
+
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const [isNewUser, setIsNewUser] = useState(false);
+    const [showLogoutToast, setShowLogoutToast] = useState(false);
+    const [showRefreshModal, setShowRefreshModal] = useState(false);
+    const isInitialMount = useRef(true);
+    const pendingRefresh = useRef(false);
 
     useEffect(() => {
         if (!auth) {
@@ -49,13 +73,104 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             return;
         }
 
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            setUser(user);
+        // Intercept refresh keyboard shortcuts
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Only intercept if user is logged in
+            if (user && !pendingRefresh.current) {
+                // F5 or Ctrl+R or Cmd+R
+                if (e.key === 'F5' || ((e.ctrlKey || e.metaKey) && e.key === 'r')) {
+                    console.log('⚠️ Refresh shortcut detected - showing custom modal');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setShowRefreshModal(true);
+                }
+            }
+        };
+
+        // Add keyboard listener
+        if (user) {
+            window.addEventListener('keydown', handleKeyDown, true); // Use capture phase
+        }
+
+        const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+            console.log('🔐 Auth state changed:', {
+                hasUser: !!firebaseUser,
+                isInitialMount: isInitialMount.current,
+                hasSession: typeof window !== 'undefined' && sessionStorage.getItem(SESSION_KEY) === 'true'
+            });
+
+            if (firebaseUser) {
+                // Check if there's an active session
+                const hasActiveSession = typeof window !== 'undefined' && sessionStorage.getItem(SESSION_KEY) === 'true';
+
+                // On initial mount, if user exists in Firebase but no session, it's a refresh
+                if (isInitialMount.current && !hasActiveSession) {
+                    console.log('🚪 Page refresh detected - logging out user');
+                    // This is a page refresh - log them out
+                    const randomMessage = SARCASTIC_MESSAGES[Math.floor(Math.random() * SARCASTIC_MESSAGES.length)];
+
+                    // Store the message to show after logout
+                    if (typeof window !== 'undefined') {
+                        sessionStorage.setItem('logout_message', randomMessage);
+                    }
+
+                    if (auth) {
+                        await signOut(auth);
+                    }
+                    setUser(null);
+                    setShowLogoutToast(true);
+                    isInitialMount.current = false;
+                } else if (hasActiveSession) {
+                    console.log('✅ Valid session - user stays logged in');
+                    // Valid session, user stays logged in
+                    setUser(firebaseUser);
+                    isInitialMount.current = false;
+                } else {
+                    console.log('🆕 Fresh login - allowing user in');
+                    // Fresh login (session will be set by login function)
+                    setUser(firebaseUser);
+                    isInitialMount.current = false;
+                }
+            } else {
+                console.log('👤 No user logged in');
+                // No user logged in
+                setUser(null);
+                isInitialMount.current = false;
+            }
             setLoading(false);
         });
 
-        return unsubscribe;
-    }, []);
+        // Show toast message if there's a logout message stored
+        if (typeof window !== 'undefined') {
+            const logoutMessage = sessionStorage.getItem('logout_message');
+            if (logoutMessage) {
+                setShowLogoutToast(true);
+            }
+        }
+
+        return () => {
+            unsubscribe();
+            window.removeEventListener('keydown', handleKeyDown, true);
+        };
+    }, [user]); // Add user to dependencies so listener updates
+
+    // Effect to show toast message
+    useEffect(() => {
+        if (showLogoutToast && typeof window !== 'undefined') {
+            const logoutMessage = sessionStorage.getItem('logout_message');
+            if (logoutMessage) {
+                console.log('🔔 Showing logout toast:', logoutMessage);
+                // Delay to ensure toast system is ready
+                setTimeout(() => {
+                    window.dispatchEvent(new CustomEvent('show-logout-toast', {
+                        detail: { message: logoutMessage }
+                    }));
+                    sessionStorage.removeItem('logout_message');
+                }, 300);
+            }
+            setShowLogoutToast(false);
+        }
+    }, [showLogoutToast]);
 
     const signUp = async (
         email: string,
@@ -78,6 +193,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (additionalData) {
                 await createUserProfile(userCredential.user, additionalData);
             }
+
+            // Set active session
+            if (typeof window !== 'undefined') {
+                sessionStorage.setItem(SESSION_KEY, 'true');
+            }
         }
     };
 
@@ -86,6 +206,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             throw new Error('Firebase Auth is not initialized. Please set up your Firebase credentials.');
         }
         await signInWithEmailAndPassword(auth, email, password);
+
+        // Set active session
+        if (typeof window !== 'undefined') {
+            sessionStorage.setItem(SESSION_KEY, 'true');
+        }
     };
 
     const checkUserProfile = async (uid: string): Promise<boolean> => {
@@ -109,6 +234,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const userExists = await checkUserProfile(user.uid);
         setIsNewUser(!userExists);
 
+        // Set active session
+        if (typeof window !== 'undefined') {
+            sessionStorage.setItem(SESSION_KEY, 'true');
+        }
+
         return { isNewUser: !userExists };
     };
 
@@ -116,8 +246,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!auth) {
             throw new Error('Firebase Auth is not initialized. Please set up your Firebase credentials.');
         }
+
+        // Clear session
+        if (typeof window !== 'undefined') {
+            sessionStorage.removeItem(SESSION_KEY);
+        }
+
         await signOut(auth);
         setIsNewUser(false);
+    };
+
+    // Handle refresh confirmation
+    const handleConfirmRefresh = async () => {
+        console.log('✅ User confirmed refresh - logging out');
+        setShowRefreshModal(false);
+        pendingRefresh.current = true;
+
+        // Logout and show sarcastic message
+        const randomMessage = SARCASTIC_MESSAGES[Math.floor(Math.random() * SARCASTIC_MESSAGES.length)];
+
+        // Clear session
+        if (typeof window !== 'undefined') {
+            sessionStorage.removeItem(SESSION_KEY);
+            sessionStorage.setItem('logout_message', randomMessage);
+        }
+
+        if (auth) {
+            await signOut(auth);
+        }
+
+        setUser(null);
+
+        // Redirect to login page instead of reloading
+        if (typeof window !== 'undefined') {
+            window.location.href = '/login';
+        }
+    };
+
+    const handleCancelRefresh = () => {
+        console.log('❌ User cancelled refresh');
+        setShowRefreshModal(false);
     };
 
     const value = {
@@ -131,5 +299,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         logout,
     };
 
-    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+    // Show loader during initial auth check
+    if (loading) {
+        return <Loader />;
+    }
+
+    return (
+        <AuthContext.Provider value={value}>
+            {children}
+            <RefreshConfirmModal
+                isOpen={showRefreshModal}
+                onConfirm={handleConfirmRefresh}
+                onCancel={handleCancelRefresh}
+            />
+        </AuthContext.Provider>
+    );
 }

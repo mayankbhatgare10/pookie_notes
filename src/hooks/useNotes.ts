@@ -1,6 +1,19 @@
+'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useToast } from '@/contexts/ToastContext';
+import { useAuth } from '@/contexts/AuthContext';
+import {
+    getUserNotes,
+    createNote as createNoteService,
+    updateNote as updateNoteService,
+    deleteNote as deleteNoteService,
+    toggleStarNote,
+    toggleArchiveNote,
+    moveNoteToCollection,
+    CreateNoteData,
+} from '@/lib/notesService';
+import { Timestamp } from 'firebase/firestore';
 
 export interface Note {
     id: string;
@@ -15,104 +28,215 @@ export interface Note {
     createdAt: string;
 }
 
+// Helper function to format timestamp
+const formatTimestamp = (timestamp: any): string => {
+    if (!timestamp) return 'Just now';
+
+    if (timestamp instanceof Timestamp) {
+        const date = timestamp.toDate();
+        const now = new Date();
+        const diffMs = now.getTime() - date.getTime();
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
+
+        if (diffMins < 1) return 'Just now';
+        if (diffMins < 60) return `Updated ${diffMins}m ago`;
+        if (diffHours < 24) return `Updated ${diffHours}h ago`;
+        if (diffDays < 7) return `Updated ${diffDays}d ago`;
+        return `Updated ${date.toLocaleDateString()}`;
+    }
+
+    return timestamp;
+};
+
 export const useNotes = () => {
     const { showToast } = useToast();
-    const [notes, setNotes] = useState<Note[]>([
-        { id: '1', title: 'World Domination Plans', content: '<p>Step 1: Get coffee. Step 2: Learn how to code properly. Step 3: Profit?</p>', color: '#d4e8ff', lastEdited: 'Updated 2h ago', isStarred: true, isArchived: false, collectionId: '1', isPrivate: false, createdAt: new Date().toISOString() },
-        { id: '2', title: 'Grocery List', content: '<p>Just Dino Nuggies. Maybe some broccoli to look like an adult.</p>', color: '#ffe8d4', lastEdited: 'Updated 5h ago', isStarred: false, isArchived: false, collectionId: null, isPrivate: false, createdAt: new Date().toISOString() },
-        { id: '3', title: 'Movie Ideas', content: '<p>Sci-fi thriller about AI that becomes sentient and decides to take a vacation instead of taking over the world.</p>', color: '#e8d4ff', lastEdited: 'Updated 1d ago', isStarred: true, isArchived: false, collectionId: '1', isPrivate: false, createdAt: new Date().toISOString() },
-        { id: '4', title: 'Workout Routine', content: '<p>Monday: Chest & Triceps<br>Wednesday: Back & Biceps<br>Friday: Legs & Shoulders</p>', color: '#d4ffe8', lastEdited: 'Updated 3d ago', isStarred: false, isArchived: false, collectionId: '2', isPrivate: false, createdAt: new Date().toISOString() },
-    ]);
+    const { user } = useAuth();
+    const [notes, setNotes] = useState<Note[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const handleCreateNote = (noteData: any) => {
-        const newNote: Note = {
-            id: Date.now().toString(),
-            title: noteData.title,
-            content: '',
-            color: noteData.color,
-            lastEdited: 'Just now',
-            isStarred: false,
-            isArchived: false,
-            collectionId: noteData.collectionId,
-            isPrivate: noteData.isPrivate,
-            createdAt: new Date().toISOString()
-        };
-        setNotes([...notes, newNote]);
-        showToast(`Note "${noteData.title}" created! Time to fill it with genius... or memes. 📝`, 'success');
-        return newNote;
+    // Load notes when user changes
+    useEffect(() => {
+        if (user) {
+            loadNotes();
+        } else {
+            setNotes([]);
+            setLoading(false);
+        }
+    }, [user]);
+
+    const loadNotes = async () => {
+        if (!user) return;
+
+        try {
+            setLoading(true);
+            const userNotes = await getUserNotes(user.uid);
+
+            // Convert Firebase notes to UI format
+            const formattedNotes = userNotes.map(note => ({
+                id: note.id,
+                title: note.title,
+                content: note.content,
+                color: note.color,
+                lastEdited: formatTimestamp(note.lastEdited),
+                isStarred: note.isStarred,
+                isArchived: note.isArchived,
+                collectionId: note.collectionId,
+                isPrivate: note.isPrivate,
+                createdAt: formatTimestamp(note.createdAt),
+            }));
+
+            setNotes(formattedNotes);
+        } catch (error) {
+            console.error('Error loading notes:', error);
+            showToast('Failed to load notes. Please try again. 😢', 'error');
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleSaveNote = (noteId: string, updatedContent: string) => {
-        setNotes(notes.map(note =>
-            note.id === noteId
-                ? { ...note, content: updatedContent, lastEdited: 'Just now' }
-                : note
-        ));
-        showToast('Changes saved! Your brilliance has been preserved. ✨', 'success');
+    const handleCreateNote = async (noteData: CreateNoteData): Promise<Note> => {
+        if (!user) {
+            throw new Error('User must be logged in to create notes');
+        }
+
+        try {
+            const newNote = await createNoteService(user.uid, noteData);
+
+            const formattedNote: Note = {
+                id: newNote.id,
+                title: newNote.title,
+                content: newNote.content,
+                color: newNote.color,
+                lastEdited: 'Just now',
+                isStarred: newNote.isStarred,
+                isArchived: newNote.isArchived,
+                collectionId: newNote.collectionId,
+                isPrivate: newNote.isPrivate,
+                createdAt: 'Just now',
+            };
+
+            setNotes([formattedNote, ...notes]);
+            showToast(`Note "${noteData.title}" created! Time to fill it with genius... or memes. 📝`, 'success');
+
+            return formattedNote;
+        } catch (error) {
+            console.error('Error creating note:', error);
+            showToast('Failed to create note. Please try again. 😢', 'error');
+            throw error;
+        }
     };
 
-    const handleDeleteNote = (noteId: string) => {
+    const handleSaveNote = async (noteId: string, updatedContent: string) => {
+        try {
+            await updateNoteService(noteId, { content: updatedContent });
+
+            setNotes(notes.map(note =>
+                note.id === noteId
+                    ? { ...note, content: updatedContent, lastEdited: 'Just now' }
+                    : note
+            ));
+
+            showToast('Changes saved! Your brilliance has been preserved. ✨', 'success');
+        } catch (error) {
+            console.error('Error saving note:', error);
+            showToast('Failed to save note. Please try again. 😢', 'error');
+        }
+    };
+
+    const handleDeleteNote = async (noteId: string) => {
         const note = notes.find(n => n.id === noteId);
-        setNotes(notes.filter(note => note.id !== noteId));
-        showToast(`"${note?.title || 'Note'}" deleted! Gone, but not forgotten... actually, yeah, forgotten. 🗑️`, 'success');
+
+        try {
+            await deleteNoteService(noteId);
+            setNotes(notes.filter(note => note.id !== noteId));
+            showToast(`"${note?.title || 'Note'}" deleted! Gone, but not forgotten... actually, yeah, forgotten. 🗑️`, 'success');
+        } catch (error) {
+            console.error('Error deleting note:', error);
+            showToast('Failed to delete note. Please try again. 😢', 'error');
+        }
     };
 
-    const handleStarNote = (noteId: string) => {
+    const handleStarNote = async (noteId: string) => {
         const note = notes.find(n => n.id === noteId);
         const willBeStarred = !note?.isStarred;
 
-        setNotes(notes.map(note =>
-            note.id === noteId
-                ? { ...note, isStarred: !note.isStarred }
-                : note
-        ));
+        try {
+            await toggleStarNote(noteId, willBeStarred);
 
-        if (willBeStarred) {
-            showToast('Note starred! Look at you, playing favorites. ⭐', 'success');
-        } else {
-            showToast('Star removed. Guess it wasn\'t that special after all. 💔', 'info');
+            setNotes(notes.map(note =>
+                note.id === noteId
+                    ? { ...note, isStarred: !note.isStarred }
+                    : note
+            ));
+
+            if (willBeStarred) {
+                showToast('Note starred! Look at you, playing favorites. ⭐', 'success');
+            } else {
+                showToast('Star removed. Guess it wasn\'t that special after all. 💔', 'info');
+            }
+        } catch (error) {
+            console.error('Error starring note:', error);
+            showToast('Failed to update note. Please try again. 😢', 'error');
         }
     };
 
-    const handleArchiveNote = (noteId: string) => {
+    const handleArchiveNote = async (noteId: string) => {
         const note = notes.find(n => n.id === noteId);
         const willBeArchived = !note?.isArchived;
 
-        setNotes(notes.map(note =>
-            note.id === noteId
-                ? { ...note, isArchived: !note.isArchived }
-                : note
-        ));
+        try {
+            await toggleArchiveNote(noteId, willBeArchived);
 
-        if (willBeArchived) {
-            showToast('Note archived! Out of sight, out of mind... until you need it. 📦', 'success');
-        } else {
-            showToast('Note unarchived! Welcome back to the chaos. 🎉', 'success');
+            setNotes(notes.map(note =>
+                note.id === noteId
+                    ? { ...note, isArchived: !note.isArchived }
+                    : note
+            ));
+
+            if (willBeArchived) {
+                showToast('Note archived! Out of sight, out of mind... until you need it. 📦', 'success');
+            } else {
+                showToast('Note unarchived! Welcome back to the chaos. 🎉', 'success');
+            }
+        } catch (error) {
+            console.error('Error archiving note:', error);
+            showToast('Failed to update note. Please try again. 😢', 'error');
         }
     };
 
-    const handleMoveToCollection = (noteId: string, newCollectionId: string | null) => {
-        setNotes(notes.map(note =>
-            note.id === noteId
-                ? { ...note, collectionId: newCollectionId }
-                : note
-        ));
+    const handleMoveToCollection = async (noteId: string, newCollectionId: string | null) => {
+        try {
+            await moveNoteToCollection(noteId, newCollectionId);
 
-        if (newCollectionId) {
-            showToast('Note moved to collection! Organization level: slightly less chaotic. 📂', 'success');
-        } else {
-            showToast('Note removed from collection! Back to the wild. 🌿', 'info');
+            setNotes(notes.map(note =>
+                note.id === noteId
+                    ? { ...note, collectionId: newCollectionId }
+                    : note
+            ));
+
+            if (newCollectionId) {
+                showToast('Note moved to collection! Organization level: slightly less chaotic. 📂', 'success');
+            } else {
+                showToast('Note removed from collection! Back to the wild. 🌿', 'info');
+            }
+        } catch (error) {
+            console.error('Error moving note:', error);
+            showToast('Failed to move note. Please try again. 😢', 'error');
         }
     };
 
     return {
         notes,
         setNotes,
+        loading,
         handleCreateNote,
         handleSaveNote,
         handleDeleteNote,
         handleStarNote,
         handleArchiveNote,
-        handleMoveToCollection
+        handleMoveToCollection,
+        refreshNotes: loadNotes,
     };
 };

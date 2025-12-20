@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { useToast } from '@/contexts/ToastContext';
+import { useCollections } from '@/hooks/useCollections';
 
 const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false });
 
@@ -13,6 +14,7 @@ interface NewCollectionModalProps {
 
 export default function NewCollectionModal({ isOpen, onClose }: NewCollectionModalProps) {
     const { showToast } = useToast();
+    const { handleCreateCollection: createCollection } = useCollections();
     const [collectionName, setCollectionName] = useState('');
     const [selectedEmoji, setSelectedEmoji] = useState('❤️');
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -42,7 +44,7 @@ export default function NewCollectionModal({ isOpen, onClose }: NewCollectionMod
         setShowEmojiPicker(false);
     };
 
-    const handleCreateCollection = () => {
+    const handleCreateCollectionClick = async () => {
         if (!collectionName.trim()) {
             showToast('Please enter a collection name! Even chaos needs a label. 📦', 'warning');
             return;
@@ -53,9 +55,26 @@ export default function NewCollectionModal({ isOpen, onClose }: NewCollectionMod
             return;
         }
 
-        // TODO: Actually create the collection
-        showToast(`Collection "${collectionName}" created! Your organized chaos begins. 🎉`, 'success');
-        onClose();
+        try {
+            await createCollection({
+                name: collectionName,
+                emoji: selectedEmoji,
+                tags: tagsEnabled ? tags : [],
+            });
+
+            // Reset form
+            setCollectionName('');
+            setSelectedEmoji('❤️');
+            setTagsEnabled(false);
+            setLockEnabled(false);
+            setPassword('');
+            setConfirmPassword('');
+            setTags(['aesthetic', 'ideas']);
+
+            onClose();
+        } catch (error) {
+            console.error('Error creating collection:', error);
+        }
     };
 
     // Close emoji picker when clicking outside
@@ -74,11 +93,11 @@ export default function NewCollectionModal({ isOpen, onClose }: NewCollectionMod
 
     return (
         <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-[20px] p-6 max-w-[400px] w-full relative shadow-lg">
+            <div className="bg-white rounded-[16px] md:rounded-[20px] p-5 md:p-6 max-w-[400px] w-full relative shadow-lg">
                 {/* Close Button */}
                 <button
                     onClick={onClose}
-                    className="absolute top-5 right-5 text-black hover:text-gray-600 transition-colors"
+                    className="absolute top-4 md:top-5 right-4 md:right-5 text-black hover:text-gray-600 transition-colors"
                 >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -86,8 +105,8 @@ export default function NewCollectionModal({ isOpen, onClose }: NewCollectionMod
                 </button>
 
                 {/* Title */}
-                <div className="mb-5">
-                    <h2 className="text-xl font-bold text-black mb-0.5">Start a Hoard</h2>
+                <div className="mb-4 md:mb-5">
+                    <h2 className="text-lg md:text-xl font-bold text-black mb-0.5">Start a Hoard</h2>
                     <p className="text-xs text-[#666]">Organize your mess, one pixel at a time.</p>
                 </div>
 
@@ -270,7 +289,7 @@ export default function NewCollectionModal({ isOpen, onClose }: NewCollectionMod
 
                 {/* Create Button */}
                 <button
-                    onClick={handleCreateCollection}
+                    onClick={handleCreateCollectionClick}
                     className="w-full py-3 rounded-full bg-[#ffd700] hover:bg-[#ffed4e] text-black font-bold text-sm transition-all mb-3"
                 >
                     Create Hoard

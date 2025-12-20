@@ -4,7 +4,7 @@ import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import PixelatedAvatar from './PixelatedAvatar';
+import PixelatedAvatar from '@/components/PixelatedAvatar';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { getFirebaseErrorMessage } from '@/utils/errorMessages';
@@ -133,23 +133,24 @@ export default function SignupForm() {
       />
 
       {/* Header */}
-      <div className="w-full px-8 py-6 flex justify-between items-center animate-slide-down">
-        <div className="flex items-center gap-3">
+      <div className="w-full px-4 md:px-8 py-4 md:py-6 flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4 animate-slide-down">
+        <div className="flex items-center gap-2 md:gap-3">
           <Image
             src="https://z3759y9was.ufs.sh/f/SFmIfV4reUMkMX05ywI8vZdrHiCNquxPUKI94Og1t6VnfcjG"
             alt="Pookie Notes Logo"
-            width={32}
-            height={32}
-            className="object-contain"
+            width={28}
+            height={28}
+            className="object-contain md:w-8 md:h-8"
             unoptimized
           />
-          <span className="text-2xl font-bold text-[#2d5016]">Pookie Notes</span>
+          <span className="text-xl md:text-2xl font-bold text-[#2d5016]">Pookie Notes</span>
         </div>
-        <div className="flex items-center gap-4">
-          <span className="text-[#2d5016] text-base">Already have an account?</span>
+        <div className="flex items-center gap-2 md:gap-4">
+          <span className="text-[#2d5016] text-sm md:text-base hidden sm:inline">Already have an account?</span>
           <Link href="/login">
-            <button className="bg-[#ffd700] hover:bg-[#ffed4e] px-6 py-2.5 rounded-full text-black font-semibold transition-colors text-sm border-2 border-black">
-              Log in, loser
+            <button className="bg-[#ffd700] hover:bg-[#ffed4e] px-4 md:px-6 py-2 md:py-2.5 rounded-full text-black font-semibold transition-colors text-xs md:text-sm border-2 border-black">
+              <span className="hidden sm:inline">Log in, loser</span>
+              <span className="sm:hidden">Log in</span>
             </button>
           </Link>
         </div>
@@ -326,7 +327,7 @@ export default function SignupForm() {
 
           {/* Footer */}
           <div className="text-center text-xs text-[#8b7355] pb-6">
-            © 2025 Mayank Bhatgare. We're judging you quietly.
+            © 2025 Crafted by Mayank Bhatgare ❣️ All rights reserved.
           </div>
         </div>
       </div>
