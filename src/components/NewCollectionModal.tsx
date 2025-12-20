@@ -55,11 +55,18 @@ export default function NewCollectionModal({ isOpen, onClose }: NewCollectionMod
             return;
         }
 
+        if (lockEnabled && !password.trim()) {
+            showToast('Private collection needs a password! Security 101. 🔒', 'warning');
+            return;
+        }
+
         try {
             await createCollection({
                 name: collectionName,
                 emoji: selectedEmoji,
                 tags: tagsEnabled ? tags : [],
+                isPrivate: lockEnabled,
+                password: lockEnabled ? password : undefined,
             });
 
             // Reset form

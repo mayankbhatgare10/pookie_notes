@@ -90,16 +90,20 @@ export default function NoteEditor({ isOpen, onClose, note, onSave, onDelete, co
     useEffect(() => {
         if (!isOpen) {
             editor?.commands.setContent('');
-            setTitle(note?.title || 'Untitled');
+            setTitle('Untitled');
             setWordCount(0);
             setIsEditing(false);
-        } else if (note?.content) {
-            editor?.commands.setContent(note.content);
-            setIsEditing(false);
-        } else {
-            setIsEditing(true);
+        } else if (note) {
+            // Update title when note changes
+            setTitle(note.title || 'Untitled');
+            if (note.content) {
+                editor?.commands.setContent(note.content);
+                setIsEditing(false);
+            } else {
+                setIsEditing(true);
+            }
         }
-    }, [isOpen, editor, note]);
+    }, [isOpen, editor, note?.id]); // Use note.id to detect note changes
 
     useEffect(() => { editor?.setEditable(isEditing); }, [isEditing, editor]);
 

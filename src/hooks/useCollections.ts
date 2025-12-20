@@ -19,6 +19,8 @@ export interface Collection {
     name: string;
     emoji: string;
     tags: string[];
+    isPrivate?: boolean;
+    passwordHash?: string;
 }
 
 export const useCollections = () => {

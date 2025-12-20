@@ -1,7 +1,5 @@
 'use client';
 
-import { useCollections } from '@/hooks/useCollections';
-
 interface Collection {
     id: string;
     name: string;
@@ -14,6 +12,7 @@ interface CollectionsGridProps {
     onAddNew: () => void;
     onSelectCollection: (collectionId: string | null) => void;
     selectedCollectionId: string | null;
+    collections: Collection[];
 }
 
 export default function CollectionsGrid({
@@ -21,10 +20,9 @@ export default function CollectionsGrid({
     onClose,
     onAddNew,
     onSelectCollection,
-    selectedCollectionId
+    selectedCollectionId,
+    collections
 }: CollectionsGridProps) {
-    const { collections, loading } = useCollections();
-
     // Only show first 10 items for 3x4 grid (Add New + All Notes + 10 collections)
     const displayedCollections = collections.slice(0, 10);
 

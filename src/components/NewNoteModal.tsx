@@ -7,7 +7,13 @@ import { useCollections } from '@/hooks/useCollections';
 interface NewNoteModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onCreate: (noteData: { title: string; color: string; collectionId: string | null; isPrivate: boolean }) => void;
+    onCreate: (noteData: {
+        title: string;
+        color: string;
+        collectionId: string | null;
+        isPrivate: boolean;
+        password?: string;
+    }) => void;
     selectedCollectionId?: string | null;
     editMode?: boolean;
 }
@@ -46,11 +52,23 @@ export default function NewNoteModal({
             showToast('Please enter a note title! Even "Untitled" needs a title. 📝', 'warning');
             return;
         }
+
+        if (isPrivate && password !== confirmPassword) {
+            showToast('Passwords don\'t match! Try again, genius. 🔐', 'error');
+            return;
+        }
+
+        if (isPrivate && !password.trim()) {
+            showToast('Private note needs a password! Security 101. 🔒', 'warning');
+            return;
+        }
+
         onCreate({
             title,
             color: selectedColor,
             collectionId: selectedCollection,
             isPrivate,
+            password: isPrivate ? password : undefined,
         });
 
         // Reset form after creation

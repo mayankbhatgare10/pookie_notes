@@ -14,6 +14,7 @@ import {
     Timestamp,
     FieldValue,
 } from 'firebase/firestore';
+import bcrypt from 'bcryptjs';
 
 export interface Note {
     id: string;
@@ -26,6 +27,7 @@ export interface Note {
     isArchived: boolean;
     collectionId: string | null;
     isPrivate: boolean;
+    passwordHash?: string; // Optional: only for private notes
     createdAt: Timestamp | FieldValue | string;
     updatedAt: Timestamp | FieldValue | string;
 }
@@ -36,6 +38,7 @@ export interface CreateNoteData {
     color: string;
     collectionId?: string | null;
     isPrivate?: boolean;
+    password?: string; // Plain password (will be hashed before storing)
 }
 
 export interface UpdateNoteData {
@@ -46,6 +49,7 @@ export interface UpdateNoteData {
     isArchived?: boolean;
     collectionId?: string | null;
     isPrivate?: boolean;
+    passwordHash?: string; // Hashed password
 }
 
 /**
@@ -63,6 +67,12 @@ export async function createNote(
         const noteRef = doc(collection(db, 'notes'));
         const now = serverTimestamp();
 
+        // Hash password if provided
+        let passwordHash: string | undefined;
+        if (noteData.isPrivate && noteData.password) {
+            passwordHash = await bcrypt.hash(noteData.password, 10);
+        }
+
         const note: Omit<Note, 'id'> = {
             userId,
             title: noteData.title,
@@ -73,6 +83,7 @@ export async function createNote(
             isArchived: false,
             collectionId: noteData.collectionId || null,
             isPrivate: noteData.isPrivate || false,
+            passwordHash,
             createdAt: now,
             updatedAt: now,
         };

@@ -7,6 +7,7 @@ import CollectionsGrid from '@/components/CollectionsGrid';
 import NewNoteModal from '@/components/NewNoteModal';
 import NoteEditor from '@/components/NoteEditor';
 import MoveNoteModal from '@/components/MoveNoteModal';
+import PasswordPromptModal from '@/components/PasswordPromptModal';
 import Sidebar from '@/components/dashboard/Sidebar';
 import DashboardHeader from '@/components/dashboard/Header';
 import Banner from '@/components/dashboard/Banner';
@@ -15,6 +16,8 @@ import NotesSection from '@/components/dashboard/NotesSection';
 import Loader from '@/components/Loader';
 import { useNotes, Note } from '@/hooks/useNotes';
 import { useCollections } from '@/hooks/useCollections';
+import { verifyPassword } from '@/lib/passwordUtils';
+import { useToast } from '@/contexts/ToastContext';
 
 export default function Dashboard() {
     const [showNewCollectionModal, setShowNewCollectionModal] = useState(false);
@@ -32,12 +35,18 @@ export default function Dashboard() {
     const [showMoveModal, setShowMoveModal] = useState(false);
     const [noteToMoveId, setNoteToMoveId] = useState<string | null>(null);
 
+    // Password Protection State
+    const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
+    const [pendingNote, setPendingNote] = useState<Note | null>(null);
+
+    const { showToast } = useToast();
+
     const {
         notes, loading: notesLoading, handleCreateNote, handleSaveNote, handleDeleteNote,
         handleStarNote, handleArchiveNote, handleMoveToCollection
     } = useNotes();
 
-    const { collections, loading: collectionsLoading } = useCollections();
+    const { collections, loading: collectionsLoading, refreshCollections } = useCollections();
 
     // Show loader while initial data is loading
     if (notesLoading || collectionsLoading) {
@@ -45,8 +54,35 @@ export default function Dashboard() {
     }
 
     const onOpenNote = (note: Note) => {
-        setCurrentNote(note);
-        setShowNoteEditor(true);
+        // Check if note is private and has password
+        if (note.isPrivate && note.passwordHash) {
+            setPendingNote(note);
+            setShowPasswordPrompt(true);
+        } else {
+            setCurrentNote(note);
+            setShowNoteEditor(true);
+        }
+    };
+
+    const handlePasswordSuccess = async (password: string) => {
+        if (!pendingNote || !pendingNote.passwordHash) return;
+
+        const isValid = await verifyPassword(password, pendingNote.passwordHash);
+
+        if (isValid) {
+            setCurrentNote(pendingNote);
+            setShowNoteEditor(true);
+            setShowPasswordPrompt(false);
+            setPendingNote(null);
+            showToast('Access granted! Welcome to your secret note. 🔓', 'success');
+        } else {
+            showToast('Wrong password! Nice try, hacker. 🚫', 'error');
+        }
+    };
+
+    const handlePasswordCancel = () => {
+        setShowPasswordPrompt(false);
+        setPendingNote(null);
     };
 
     const handleCreate = async (noteData: any) => {
@@ -62,6 +98,12 @@ export default function Dashboard() {
             setShowMoveModal(false);
             setNoteToMoveId(null);
         }
+    };
+
+    const handleNewCollectionClose = () => {
+        setShowNewCollectionModal(false);
+        // Refresh collections when modal closes
+        refreshCollections();
     };
 
     const collection = collections.find(c => c.id === selectedCollectionId);
@@ -123,7 +165,7 @@ export default function Dashboard() {
 
             <NewCollectionModal
                 isOpen={showNewCollectionModal}
-                onClose={() => setShowNewCollectionModal(false)}
+                onClose={handleNewCollectionClose}
             />
 
             <SettingsModal
@@ -137,6 +179,7 @@ export default function Dashboard() {
                 onAddNew={() => setShowNewCollectionModal(true)}
                 onSelectCollection={setSelectedCollectionId}
                 selectedCollectionId={selectedCollectionId}
+                collections={collections}
             />
 
             <NewNoteModal
@@ -165,6 +208,13 @@ export default function Dashboard() {
                     setNoteToMoveId(null);
                 }}
                 onMove={onMoveHandler}
+            />
+
+            <PasswordPromptModal
+                isOpen={showPasswordPrompt}
+                onClose={handlePasswordCancel}
+                onSuccess={handlePasswordSuccess}
+                itemName="note"
             />
         </div>
     );

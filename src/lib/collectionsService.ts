@@ -14,6 +14,7 @@ import {
     Timestamp,
     FieldValue,
 } from 'firebase/firestore';
+import bcrypt from 'bcryptjs';
 
 export interface Collection {
     id: string;
@@ -21,6 +22,8 @@ export interface Collection {
     name: string;
     emoji: string;
     tags: string[];
+    isPrivate?: boolean;
+    passwordHash?: string;
     createdAt: Timestamp | FieldValue | string;
     updatedAt: Timestamp | FieldValue | string;
 }
@@ -29,12 +32,16 @@ export interface CreateCollectionData {
     name: string;
     emoji: string;
     tags?: string[];
+    isPrivate?: boolean;
+    password?: string;
 }
 
 export interface UpdateCollectionData {
     name?: string;
     emoji?: string;
     tags?: string[];
+    isPrivate?: boolean;
+    passwordHash?: string;
 }
 
 /**
@@ -52,11 +59,19 @@ export async function createCollection(
         const collectionRef = doc(collection(db, 'collections'));
         const now = serverTimestamp();
 
+        // Hash password if provided
+        let passwordHash: string | undefined;
+        if (collectionData.isPrivate && collectionData.password) {
+            passwordHash = await bcrypt.hash(collectionData.password, 10);
+        }
+
         const newCollection: Omit<Collection, 'id'> = {
             userId,
             name: collectionData.name,
             emoji: collectionData.emoji,
             tags: collectionData.tags || [],
+            isPrivate: collectionData.isPrivate || false,
+            passwordHash,
             createdAt: now,
             updatedAt: now,
         };

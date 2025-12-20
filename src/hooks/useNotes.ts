@@ -25,6 +25,7 @@ export interface Note {
     isArchived: boolean;
     collectionId: string | null;
     isPrivate: boolean;
+    passwordHash?: string;
     createdAt: string;
 }
 
@@ -84,6 +85,7 @@ export const useNotes = () => {
                 isArchived: note.isArchived,
                 collectionId: note.collectionId,
                 isPrivate: note.isPrivate,
+                passwordHash: note.passwordHash,
                 createdAt: formatTimestamp(note.createdAt),
             }));
 
@@ -114,6 +116,7 @@ export const useNotes = () => {
                 isArchived: newNote.isArchived,
                 collectionId: newNote.collectionId,
                 isPrivate: newNote.isPrivate,
+                passwordHash: newNote.passwordHash,
                 createdAt: 'Just now',
             };
 
@@ -128,13 +131,16 @@ export const useNotes = () => {
         }
     };
 
-    const handleSaveNote = async (noteId: string, updatedContent: string) => {
+    const handleSaveNote = async (noteId: string, title: string, updatedContent: string) => {
         try {
-            await updateNoteService(noteId, { content: updatedContent });
+            await updateNoteService(noteId, {
+                title,
+                content: updatedContent
+            });
 
             setNotes(notes.map(note =>
                 note.id === noteId
-                    ? { ...note, content: updatedContent, lastEdited: 'Just now' }
+                    ? { ...note, title, content: updatedContent, lastEdited: 'Just now' }
                     : note
             ));
 
