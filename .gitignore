@@ -24,8 +24,26 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# local env files
+# local env files - PRIVACY CRITICAL
 .env*.local
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Firebase - PRIVACY CRITICAL
+firebase-debug.log
+.firebase/
+.firebaserc
+firebase.json
+serviceAccountKey.json
+*-firebase-adminsdk-*.json
+
+# API Keys & Secrets - PRIVACY CRITICAL
+secrets/
+*.key
+*.secret
+.secrets
 
 # vercel
 .vercel
@@ -34,3 +52,16 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Bun
+.bun/

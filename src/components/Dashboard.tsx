@@ -59,7 +59,7 @@ export default function Dashboard() {
     const collection = COLLECTIONS.find(c => c.id === selectedCollectionId);
 
     return (
-        <div className="min-h-screen bg-[#f5f4e8] flex flex-col md:flex-row">
+        <div className="min-h-screen bg-[#f5f4e8] flex flex-col md:flex-row animate-fade-in">
             {/* Mobile Sidebar Overlay */}
             {showMobileSidebar && (
                 <div

@@ -48,7 +48,7 @@ export default function NoteCard({
 
     return (
         <div
-            className="bg-white rounded-[20px] p-6 cursor-pointer hover:scale-[1.02] transition-all shadow-sm hover:shadow-md relative"
+            className="bg-white rounded-[20px] p-6 cursor-pointer hover:scale-[1.02] transition-all duration-200 shadow-sm hover:shadow-md relative animate-scale-in"
             onClick={onClick}
         >
             {/* Title */}
@@ -92,7 +92,7 @@ export default function NoteCard({
 
                 {/* Dropdown Menu */}
                 {showMenu && (
-                    <div className="absolute right-0 mt-2 w-40 bg-white rounded-xl shadow-lg border border-[#e0e0e0] py-1 z-10">
+                    <div className="absolute right-0 mt-2 w-40 bg-white rounded-xl shadow-lg border border-[#e0e0e0] py-1 z-10 animate-slide-down">
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();

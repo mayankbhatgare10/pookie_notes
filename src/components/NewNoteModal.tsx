@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useToast } from '@/contexts/ToastContext';
 
 interface NewNoteModalProps {
     isOpen: boolean;
@@ -17,6 +18,7 @@ export default function NewNoteModal({
     selectedCollectionId = null,
     editMode = false
 }: NewNoteModalProps) {
+    const { showToast } = useToast();
     const [title, setTitle] = useState('');
     const [selectedColor, setSelectedColor] = useState('#e8d4ff');
     const [selectedCollection, setSelectedCollection] = useState(selectedCollectionId || null);
@@ -47,7 +49,7 @@ export default function NewNoteModal({
 
     const handleCreate = () => {
         if (!title.trim()) {
-            alert('Please enter a note title');
+            showToast('Please enter a note title! Even "Untitled" needs a title. 📝', 'warning');
             return;
         }
         onCreate({
@@ -61,8 +63,8 @@ export default function NewNoteModal({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-[24px] w-full max-w-[480px] shadow-2xl relative">
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+            <div className="bg-white rounded-[24px] w-full max-w-[480px] shadow-2xl relative animate-scale-in">
                 {/* Close Button */}
                 <button
                     onClick={onClose}

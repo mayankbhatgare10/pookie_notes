@@ -1,8 +1,12 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import PixelatedAvatar from './PixelatedAvatar';
+import UserAvatar from './UserAvatar';
+import { useAuth } from '@/contexts/AuthContext';
+import { useUserProfile } from '@/hooks/useUserProfile';
+import { useToast } from '@/contexts/ToastContext';
 
 interface SettingsModalProps {
     isOpen: boolean;
@@ -10,6 +14,9 @@ interface SettingsModalProps {
 }
 
 export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
+    const { user } = useAuth();
+    const { profile, updateProfile } = useUserProfile();
+    const { showToast } = useToast();
     const [isEditing, setIsEditing] = useState(false);
     const [selectedAvatar, setSelectedAvatar] = useState('jethalal');
     const [uploadedImage, setUploadedImage] = useState<string | null>(null);
@@ -17,14 +24,34 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [showPassword, setShowPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
+    const [saving, setSaving] = useState(false);
 
     const [formData, setFormData] = useState({
-        firstName: 'Mayank',
-        lastName: 'Bhatgare',
-        email: 'mayank@pookienotes.com',
+        firstName: '',
+        lastName: '',
+        email: '',
         currentPassword: '',
         newPassword: '',
     });
+
+    // Load profile data when it becomes available
+    useEffect(() => {
+        if (profile) {
+            setFormData({
+                firstName: profile.firstName || '',
+                lastName: profile.lastName || '',
+                email: profile.email || '',
+                currentPassword: '',
+                newPassword: '',
+            });
+            setSelectedAvatar(profile.avatar || 'jethalal');
+
+            // If it's an uploaded image (data URL or http URL), set it
+            if (profile.avatar?.startsWith('data:') || profile.avatar?.startsWith('http')) {
+                setUploadedImage(profile.avatar);
+            }
+        }
+    }, [profile]);
 
     const avatars = [
         { id: 'upload', name: 'Upload', type: null as any },
@@ -54,10 +81,25 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         fileInputRef.current?.click();
     };
 
-    const handleSave = () => {
-        // TODO: Implement save functionality
-        console.log('Settings saved:', formData);
-        setIsEditing(false);
+    const handleSave = async () => {
+        if (!user) return;
+
+        setSaving(true);
+        try {
+            await updateProfile({
+                firstName: formData.firstName,
+                lastName: formData.lastName,
+                displayName: `${formData.firstName} ${formData.lastName}`,
+                avatar: selectedAvatar === 'upload' ? uploadedImage || undefined : selectedAvatar,
+            });
+            setIsEditing(false);
+            showToast('Profile updated! Looking good, Pookie! 😎', 'success');
+        } catch (error) {
+            console.error('Error saving profile:', error);
+            showToast('Failed to save profile. Even we make mistakes sometimes. 🤷', 'error');
+        } finally {
+            setSaving(false);
+        }
     };
 
     const handleDeleteAccount = () => {
@@ -73,12 +115,12 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         <>
             {/* Backdrop - Covers entire screen with blur */}
             <div
-                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] transition-all"
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] animate-fade-in"
                 onClick={onClose}
             />
 
             {/* Modal */}
-            <div className="fixed right-0 top-0 h-full w-[420px] bg-white shadow-2xl z-[70] overflow-y-auto">
+            <div className="fixed right-0 top-0 h-full w-[420px] bg-white shadow-2xl z-[70] overflow-y-auto animate-slide-left">
                 {/* Hidden file input */}
                 <input
                     ref={fileInputRef}
@@ -121,18 +163,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                             {/* Profile Display */}
                             <div className="text-center mb-6">
                                 <div className="w-24 h-24 mx-auto mb-4 rounded-full border-2 border-black overflow-hidden bg-white shadow-sm">
-                                    {selectedAvatar === 'upload' && uploadedImage ? (
-                                        <img src={uploadedImage} alt="Profile" className="w-full h-full object-cover" />
-                                    ) : (
-                                        <Image
-                                            src="https://z3759y9was.ufs.sh/f/SFmIfV4reUMkMX05ywI8vZdrHiCNquxPUKI94Og1t6VnfcjG"
-                                            alt="Profile"
-                                            width={96}
-                                            height={96}
-                                            className="object-cover"
-                                            unoptimized
-                                        />
-                                    )}
+                                    <UserAvatar avatar={profile?.avatar} size={96} />
                                 </div>
                             </div>
 
@@ -312,9 +343,10 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                 </button>
                                 <button
                                     onClick={handleSave}
-                                    className="flex-1 py-3 rounded-full bg-[#ffd700] hover:bg-[#ffed4e] border-2 border-black text-black font-bold text-sm transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px]"
+                                    disabled={saving}
+                                    className="flex-1 py-3 rounded-full bg-[#ffd700] hover:bg-[#ffed4e] border-2 border-black text-black font-bold text-sm transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    Save Changes
+                                    {saving ? 'Saving...' : 'Save Changes'}
                                 </button>
                             </div>
                         </>

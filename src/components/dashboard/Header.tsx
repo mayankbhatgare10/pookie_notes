@@ -5,6 +5,11 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
 import { GridDotsIcon, SettingsIcon, LogoutIcon } from '@/components/icons';
+import { useAuth } from '@/contexts/AuthContext';
+import { useUserProfile } from '@/hooks/useUserProfile';
+import UserAvatar from '@/components/UserAvatar';
+import ConfirmModal from '@/components/ConfirmModal';
+import { useToast } from '@/contexts/ToastContext';
 
 interface HeaderProps {
     showCollectionsGrid: boolean;
@@ -15,9 +20,24 @@ interface HeaderProps {
 
 export default function Header({ showCollectionsGrid, setShowCollectionsGrid, setShowSettingsModal, onMenuClick }: HeaderProps) {
     const router = useRouter();
+    const { user, logout } = useAuth();
+    const { profile } = useUserProfile();
+    const { showToast } = useToast();
     const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
     const profileDropdownRef = useRef<HTMLDivElement>(null);
     const userImage = "https://z3759y9was.ufs.sh/f/SFmIfV4reUMkMX05ywI8vZdrHiCNquxPUKI94Og1t6VnfcjG";
+
+    const handleLogout = async () => {
+        try {
+            await logout();
+            showToast('Logged out successfully. See you later, Pookie! 👋', 'success');
+            router.push('/login');
+        } catch (error) {
+            console.error('Logout error:', error);
+            showToast('Failed to logout. You\'re stuck with us! 😅', 'error');
+        }
+    };
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -69,14 +89,7 @@ export default function Header({ showCollectionsGrid, setShowCollectionsGrid, se
                         className="relative focus:outline-none"
                     >
                         <div className="w-8 h-8 md:w-9 md:h-9 rounded-full border-2 border-black overflow-hidden shadow-sm hover:scale-105 transition-transform bg-white">
-                            <Image
-                                src={userImage}
-                                alt="Profile"
-                                width={36}
-                                height={36}
-                                className="object-cover"
-                                unoptimized
-                            />
+                            <UserAvatar avatar={profile?.avatar} size={36} />
                         </div>
                     </button>
 
@@ -84,18 +97,15 @@ export default function Header({ showCollectionsGrid, setShowCollectionsGrid, se
                         <div className="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-lg z-50 border border-[#e0e0e0]">
                             <div className="px-4 py-3 border-b border-[#f0f0f0] flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full border-2 border-black overflow-hidden bg-white flex-shrink-0">
-                                    <Image
-                                        src={userImage}
-                                        alt="Profile"
-                                        width={40}
-                                        height={40}
-                                        className="object-cover"
-                                        unoptimized
-                                    />
+                                    <UserAvatar avatar={profile?.avatar} size={40} />
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <p className="font-semibold text-sm text-black truncate">Mayank Bhatgare</p>
-                                    <p className="text-xs text-[#666] mt-0.5 truncate">mayank@pookienotes.com</p>
+                                    <p className="font-semibold text-sm text-black truncate">
+                                        {profile?.displayName || user?.displayName || 'User'}
+                                    </p>
+                                    <p className="text-xs text-[#666] mt-0.5 truncate">
+                                        {profile?.email || user?.email || ''}
+                                    </p>
                                 </div>
                             </div>
 
@@ -111,7 +121,10 @@ export default function Header({ showCollectionsGrid, setShowCollectionsGrid, se
                                     <span className="text-black">Settings</span>
                                 </button>
                                 <button
-                                    onClick={() => router.push('/login')}
+                                    onClick={() => {
+                                        setShowLogoutConfirm(true);
+                                        setShowProfileDropdown(false);
+                                    }}
                                     className="w-full px-4 py-2.5 text-left text-sm hover:bg-[#ffe8e8] transition-colors flex items-center gap-3 text-red-600"
                                 >
                                     <LogoutIcon className="w-4 h-4" />
@@ -122,6 +135,23 @@ export default function Header({ showCollectionsGrid, setShowCollectionsGrid, se
                     )}
                 </div>
             </div>
+
+            {/* Logout Confirmation Modal */}
+            <ConfirmModal
+                isOpen={showLogoutConfirm}
+                onClose={() => setShowLogoutConfirm(false)}
+                onConfirm={handleLogout}
+                title="Leaving so soon?"
+                message="Are you sure you want to log out? Your pookies will miss you! We promise we won't judge your notes while you're gone... much. 👀"
+                confirmText="Yeah, I'm Out"
+                cancelText="Nah, I'll Stay"
+                type="warning"
+                icon={
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                }
+            />
         </header>
     );
 }

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import dynamic from 'next/dynamic';
+import { useToast } from '@/contexts/ToastContext';
 
 const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false });
 
@@ -11,6 +12,7 @@ interface NewCollectionModalProps {
 }
 
 export default function NewCollectionModal({ isOpen, onClose }: NewCollectionModalProps) {
+    const { showToast } = useToast();
     const [collectionName, setCollectionName] = useState('');
     const [selectedEmoji, setSelectedEmoji] = useState('❤️');
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -38,6 +40,22 @@ export default function NewCollectionModal({ isOpen, onClose }: NewCollectionMod
     const handleEmojiClick = (emojiData: any) => {
         setSelectedEmoji(emojiData.emoji);
         setShowEmojiPicker(false);
+    };
+
+    const handleCreateCollection = () => {
+        if (!collectionName.trim()) {
+            showToast('Please enter a collection name! Even chaos needs a label. 📦', 'warning');
+            return;
+        }
+
+        if (lockEnabled && password !== confirmPassword) {
+            showToast('Passwords don\'t match! Try again, genius. 🔐', 'error');
+            return;
+        }
+
+        // TODO: Actually create the collection
+        showToast(`Collection "${collectionName}" created! Your organized chaos begins. 🎉`, 'success');
+        onClose();
     };
 
     // Close emoji picker when clicking outside
@@ -252,7 +270,7 @@ export default function NewCollectionModal({ isOpen, onClose }: NewCollectionMod
 
                 {/* Create Button */}
                 <button
-                    onClick={onClose}
+                    onClick={handleCreateCollection}
                     className="w-full py-3 rounded-full bg-[#ffd700] hover:bg-[#ffed4e] text-black font-bold text-sm transition-all mb-3"
                 >
                     Create Hoard
