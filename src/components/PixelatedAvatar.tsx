@@ -2,6 +2,16 @@
 
 import Image from 'next/image';
 
+// Import avatars from assets
+import jethalalAvatar from '@/assets/avatars/jethalal.png';
+import akshayAvatar from '@/assets/avatars/akshay.png';
+import pareshAvatar from '@/assets/avatars/paresh.png';
+import pankajAvatar from '@/assets/avatars/pankaj.png';
+import rinkiAvatar from '@/assets/avatars/rinki.png';
+import dayaAvatar from '@/assets/avatars/daya.png';
+import manjuAvatar from '@/assets/avatars/manju.png';
+import sameerAvatar from '@/assets/avatars/sameer.png';
+
 interface PixelatedAvatarProps {
   type: 'jethalal' | 'akshay' | 'paresh' | 'pankaj' | 'rinki' | 'daya' | 'manju' | 'sameer';
   size?: number;
@@ -9,14 +19,14 @@ interface PixelatedAvatarProps {
 }
 
 const avatarMap = {
-  jethalal: '/avatars/jethalal.png',
-  akshay: '/avatars/akshay.png',
-  paresh: '/avatars/paresh.png',
-  pankaj: '/avatars/pankaj.png',
-  rinki: '/avatars/rinki.png',
-  daya: '/avatars/daya.png',
-  manju: '/avatars/manju.png',
-  sameer: '/avatars/sameer.png',
+  jethalal: jethalalAvatar,
+  akshay: akshayAvatar,
+  paresh: pareshAvatar,
+  pankaj: pankajAvatar,
+  rinki: rinkiAvatar,
+  daya: dayaAvatar,
+  manju: manjuAvatar,
+  sameer: sameerAvatar,
 };
 
 export default function PixelatedAvatar({ type, size = 96, className = '' }: PixelatedAvatarProps) {

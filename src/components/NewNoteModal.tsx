@@ -1,40 +1,30 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
+import { useState } from 'react';
 
 interface NewNoteModalProps {
     isOpen: boolean;
     onClose: () => void;
+    onCreate: (noteData: { title: string; color: string; collectionId: string | null; isPrivate: boolean }) => void;
     selectedCollectionId?: string | null;
     editMode?: boolean;
-    noteData?: {
-        title: string;
-        color: string;
-        emoji: string;
-        collectionId: string | null;
-        isPrivate: boolean;
-    };
 }
 
 export default function NewNoteModal({
     isOpen,
     onClose,
+    onCreate,
     selectedCollectionId = null,
-    editMode = false,
-    noteData
+    editMode = false
 }: NewNoteModalProps) {
-    const [title, setTitle] = useState(noteData?.title || '');
-    const [selectedColor, setSelectedColor] = useState(noteData?.color || '#e8d4ff');
-    const [selectedEmoji, setSelectedEmoji] = useState(noteData?.emoji || '📝');
-    const [selectedCollection, setSelectedCollection] = useState(noteData?.collectionId || selectedCollectionId || null);
-    const [isPrivate, setIsPrivate] = useState(noteData?.isPrivate || false);
+    const [title, setTitle] = useState('');
+    const [selectedColor, setSelectedColor] = useState('#e8d4ff');
+    const [selectedCollection, setSelectedCollection] = useState(selectedCollectionId || null);
+    const [isPrivate, setIsPrivate] = useState(false);
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-    const emojiPickerRef = useRef<HTMLDivElement>(null);
 
     const colors = [
         { name: 'Purple', value: '#e8d4ff' },
@@ -55,34 +45,18 @@ export default function NewNoteModal({
         { id: '5', name: 'Travel', emoji: '✈️' },
     ];
 
-    const handleEmojiClick = (emojiData: EmojiClickData) => {
-        setSelectedEmoji(emojiData.emoji);
-        setShowEmojiPicker(false);
-    };
-
     const handleCreate = () => {
-        // TODO: Implement note creation logic
-        console.log({
+        if (!title.trim()) {
+            alert('Please enter a note title');
+            return;
+        }
+        onCreate({
             title,
             color: selectedColor,
-            emoji: selectedEmoji,
             collectionId: selectedCollection,
             isPrivate,
-            password: isPrivate ? password : null,
         });
-        onClose();
     };
-
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node)) {
-                setShowEmojiPicker(false);
-            }
-        };
-
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
 
     if (!isOpen) return null;
 
@@ -134,42 +108,13 @@ export default function NewNoteModal({
                                     key={color.value}
                                     onClick={() => setSelectedColor(color.value)}
                                     className={`w-10 h-10 rounded-lg transition-all ${selectedColor === color.value
-                                            ? 'ring-2 ring-black scale-110'
-                                            : 'hover:scale-105'
+                                        ? 'ring-2 ring-black scale-110'
+                                        : 'hover:scale-105'
                                         }`}
                                     style={{ backgroundColor: color.value }}
                                     title={color.name}
                                 />
                             ))}
-                        </div>
-                    </div>
-
-                    {/* Icon Selection */}
-                    <div className="mb-5">
-                        <label className="block text-[9px] font-bold text-[#666] uppercase tracking-wider mb-2">
-                            Note Icon
-                        </label>
-                        <div className="relative" ref={emojiPickerRef}>
-                            <button
-                                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                                className="w-full px-4 py-2.5 rounded-lg bg-[#f8f7f0] border border-[#e0e0e0] text-left flex items-center gap-3 hover:bg-[#eeeee0] transition-colors"
-                            >
-                                <span className="text-2xl">{selectedEmoji}</span>
-                                <span className="text-sm text-[#666]">Click to change icon</span>
-                            </button>
-
-                            {showEmojiPicker && (
-                                <div className="absolute top-12 left-0 z-50">
-                                    <EmojiPicker
-                                        onEmojiClick={handleEmojiClick}
-                                        width={320}
-                                        height={400}
-                                        searchDisabled={false}
-                                        skinTonesDisabled={true}
-                                        previewConfig={{ showPreview: false }}
-                                    />
-                                </div>
-                            )}
                         </div>
                     </div>
 
