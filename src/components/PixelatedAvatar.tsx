@@ -2,16 +2,6 @@
 
 import Image from 'next/image';
 
-// Import avatars from assets
-import jethalalAvatar from '@/assets/avatars/jethalal.png';
-import akshayAvatar from '@/assets/avatars/akshay.png';
-import pareshAvatar from '@/assets/avatars/paresh.png';
-import pankajAvatar from '@/assets/avatars/pankaj.png';
-import rinkiAvatar from '@/assets/avatars/rinki.png';
-import dayaAvatar from '@/assets/avatars/daya.png';
-import manjuAvatar from '@/assets/avatars/manju.png';
-import sameerAvatar from '@/assets/avatars/sameer.png';
-
 interface PixelatedAvatarProps {
   type: 'jethalal' | 'akshay' | 'paresh' | 'pankaj' | 'rinki' | 'daya' | 'manju' | 'sameer';
   size?: number;
@@ -19,14 +9,14 @@ interface PixelatedAvatarProps {
 }
 
 const avatarMap = {
-  jethalal: jethalalAvatar,
-  akshay: akshayAvatar,
-  paresh: pareshAvatar,
-  pankaj: pankajAvatar,
-  rinki: rinkiAvatar,
-  daya: dayaAvatar,
-  manju: manjuAvatar,
-  sameer: sameerAvatar,
+  jethalal: 'https://z3759y9was.ufs.sh/f/SFmIfV4reUMk6lcvA5DQsovOQWFnVXDJCKUY0qyr4Twfg3Lj',
+  akshay: 'https://z3759y9was.ufs.sh/f/SFmIfV4reUMkXbKQUKyrvdbCJVLp3ko4jSUNziI2WOPhfQZu',
+  paresh: 'https://z3759y9was.ufs.sh/f/SFmIfV4reUMkUQ0UeyWw29eb6oTiG08cDalx1YEUuzKdjVRL',
+  pankaj: 'https://z3759y9was.ufs.sh/f/SFmIfV4reUMkMX05ywI8vZdrHiCNquxPUKI94Og1t6VnfcjG', // Using pookie logo as placeholder
+  rinki: 'https://z3759y9was.ufs.sh/f/SFmIfV4reUMk4od5rYkjfEORPJqZTCINkBpHzcYVMrsQa2oi',
+  daya: 'https://z3759y9was.ufs.sh/f/SFmIfV4reUMkQRnnzCczsF14nHmwfvk0t52guSxMDObNpyZW',
+  manju: 'https://z3759y9was.ufs.sh/f/SFmIfV4reUMkpQNeuQLSDjrxk5fIEinhvHqN1Pdc9VLG4Ww0',
+  sameer: 'https://z3759y9was.ufs.sh/f/SFmIfV4reUMkkj2wWBRGQSTlZ27FWrA1ePdJU4NkV53zMnHR',
 };
 
 export default function PixelatedAvatar({ type, size = 96, className = '' }: PixelatedAvatarProps) {

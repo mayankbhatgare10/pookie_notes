@@ -10,9 +10,10 @@ interface HeaderProps {
     showCollectionsGrid: boolean;
     setShowCollectionsGrid: (show: boolean) => void;
     setShowSettingsModal: (show: boolean) => void;
+    onMenuClick?: () => void;
 }
 
-export default function Header({ showCollectionsGrid, setShowCollectionsGrid, setShowSettingsModal }: HeaderProps) {
+export default function Header({ showCollectionsGrid, setShowCollectionsGrid, setShowSettingsModal, onMenuClick }: HeaderProps) {
     const router = useRouter();
     const [showProfileDropdown, setShowProfileDropdown] = useState(false);
     const profileDropdownRef = useRef<HTMLDivElement>(null);
@@ -29,26 +30,37 @@ export default function Header({ showCollectionsGrid, setShowCollectionsGrid, se
     }, []);
 
     return (
-        <header className="bg-[#f5f4e8] px-10 py-5 flex items-center justify-between">
-            <div className="flex items-center gap-3">
+        <header className="bg-[#f5f4e8] px-4 md:px-6 lg:px-10 py-4 md:py-5 flex items-center justify-between border-b border-[#e0dfd5] md:border-none">
+            <div className="flex items-center gap-2 md:gap-3">
+                {/* Mobile Menu Button */}
+                <button
+                    onClick={onMenuClick}
+                    className="md:hidden p-2 hover:bg-[#eae9dd] rounded-lg transition-colors"
+                    aria-label="Toggle menu"
+                >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+
                 <Image
                     src={userImage}
                     alt="Pookie Notes"
-                    width={28}
-                    height={28}
-                    className="object-contain"
+                    width={24}
+                    height={24}
+                    className="object-contain md:w-7 md:h-7"
                     unoptimized
                 />
-                <span className="text-[17px] font-bold">Pookie Notes</span>
+                <span className="text-[15px] md:text-[17px] font-bold">Pookie Notes</span>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 md:gap-4">
                 <button
                     onClick={() => setShowCollectionsGrid(!showCollectionsGrid)}
-                    className="p-2.5 hover:bg-[#eae9dd] rounded-lg transition-colors"
+                    className="p-2 md:p-2.5 hover:bg-[#eae9dd] rounded-lg transition-colors"
                     title="Collections"
                 >
-                    <GridDotsIcon className="w-5 h-5" />
+                    <GridDotsIcon className="w-4 h-4 md:w-5 md:h-5" />
                 </button>
 
                 <div className="relative" ref={profileDropdownRef}>
@@ -56,7 +68,7 @@ export default function Header({ showCollectionsGrid, setShowCollectionsGrid, se
                         onClick={() => setShowProfileDropdown(!showProfileDropdown)}
                         className="relative focus:outline-none"
                     >
-                        <div className="w-9 h-9 rounded-full border-2 border-black overflow-hidden shadow-sm hover:scale-105 transition-transform bg-white">
+                        <div className="w-8 h-8 md:w-9 md:h-9 rounded-full border-2 border-black overflow-hidden shadow-sm hover:scale-105 transition-transform bg-white">
                             <Image
                                 src={userImage}
                                 alt="Profile"

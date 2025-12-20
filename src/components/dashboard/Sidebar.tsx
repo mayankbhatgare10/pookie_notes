@@ -17,7 +17,7 @@ export default function Sidebar() {
     const { time, period, dayDate } = formatTime(currentTime);
 
     return (
-        <div className="w-[280px] bg-[#f5f4e8] px-8 py-8 flex flex-col hidden md:flex">
+        <div className="w-[280px] bg-[#f5f4e8] px-8 py-8 flex flex-col">
             {/* Clock */}
             <div className="bg-white rounded-[20px] px-6 py-6 mb-6 text-center shadow-sm">
                 <div className="mb-2 flex items-end justify-center gap-1.5">

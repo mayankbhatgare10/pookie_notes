@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -26,6 +25,7 @@ export default function Dashboard() {
     const [currentNote, setCurrentNote] = useState<Note | null>(null);
     const [activeTab, setActiveTab] = useState<'all' | 'archived'>('all');
     const [showBanner, setShowBanner] = useState(true);
+    const [showMobileSidebar, setShowMobileSidebar] = useState(false);
 
     // Move Modal State
     const [showMoveModal, setShowMoveModal] = useState(false);
@@ -48,7 +48,6 @@ export default function Dashboard() {
         setShowNewNoteModal(false);
     };
 
-    // Move Handler wrapper
     const onMoveHandler = (newCollectionId: string | null) => {
         if (noteToMoveId) {
             handleMoveToCollection(noteToMoveId, newCollectionId);
@@ -60,22 +59,35 @@ export default function Dashboard() {
     const collection = COLLECTIONS.find(c => c.id === selectedCollectionId);
 
     return (
-        <div className="min-h-screen bg-[#f5f4e8] flex">
-            <Sidebar />
+        <div className="min-h-screen bg-[#f5f4e8] flex flex-col md:flex-row">
+            {/* Mobile Sidebar Overlay */}
+            {showMobileSidebar && (
+                <div
+                    className="fixed inset-0 bg-black/50 z-40 md:hidden"
+                    onClick={() => setShowMobileSidebar(false)}
+                />
+            )}
 
-            <div className="flex-1 flex flex-col">
+            {/* Sidebar */}
+            <div className={`fixed md:static inset-y-0 left-0 z-50 transform transition-transform duration-300 md:transform-none ${showMobileSidebar ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+                }`}>
+                <Sidebar />
+            </div>
+
+            <div className="flex-1 flex flex-col min-w-0">
                 <DashboardHeader
                     showCollectionsGrid={showCollectionsGrid}
                     setShowCollectionsGrid={setShowCollectionsGrid}
                     setShowSettingsModal={setShowSettingsModal}
+                    onMenuClick={() => setShowMobileSidebar(!showMobileSidebar)}
                 />
 
-                <div className="flex-1 overflow-y-auto px-10 py-8 bg-[#f5f4e8]">
+                <div className="flex-1 overflow-y-auto px-4 md:px-6 lg:px-10 py-4 md:py-6 lg:py-8 bg-[#f5f4e8]">
                     {selectedCollectionId && (
-                        <div className="mb-6">
-                            <h1 className="text-3xl font-bold text-black flex items-center gap-3">
-                                <span className="text-4xl">{collection?.emoji || '📝'}</span>
-                                <span>{collection?.name || 'Collection'}</span>
+                        <div className="mb-4 md:mb-6">
+                            <h1 className="text-2xl md:text-3xl font-bold text-black flex items-center gap-2 md:gap-3">
+                                <span className="text-3xl md:text-4xl">{collection?.emoji || '📝'}</span>
+                                <span className="truncate">{collection?.name || 'Collection'}</span>
                             </h1>
                         </div>
                     )}

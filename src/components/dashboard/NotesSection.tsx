@@ -29,7 +29,7 @@ export default function NotesSection({
                     <h2 className="text-lg font-bold">Archived Notes</h2>
                 </div>
                 {notes.filter(note => note.isArchived).length > 0 ? (
-                    <div className="grid grid-cols-4 gap-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
                         {notes.filter(note => note.isArchived).map(note => (
                             <NoteCard
                                 key={note.id}
@@ -66,7 +66,7 @@ export default function NotesSection({
     if (selectedCollectionId) {
         return (
             <div className="mb-10">
-                <div className="grid grid-cols-4 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
                     <button
                         onClick={onNewNote}
                         className="bg-[#fffacd] border-2 border-dashed border-black rounded-[24px] p-8 flex flex-col items-center justify-center cursor-pointer hover:scale-[1.02] transition-transform shadow-[0_8px_20px_rgba(0,0,0,0.08)]"
@@ -111,7 +111,7 @@ export default function NotesSection({
                     </div>
                     <button className="text-sm text-[#a89968] hover:text-black transition-colors">View All</button>
                 </div>
-                <div className="grid grid-cols-4 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
                     <button
                         onClick={onNewNote}
                         className="bg-[#fffacd] border-2 border-dashed border-black rounded-[24px] p-8 flex flex-col items-center justify-center cursor-pointer hover:scale-[1.02] transition-transform shadow-[0_8px_20px_rgba(0,0,0,0.08)]"
@@ -154,7 +154,7 @@ export default function NotesSection({
                     </div>
                     <button className="text-sm text-[#a89968] hover:text-black transition-colors">View All</button>
                 </div>
-                <div className="grid grid-cols-4 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
                     {notes
                         .filter(note => !note.isArchived && note.isStarred)
                         .slice(0, 4)
@@ -186,7 +186,7 @@ export default function NotesSection({
                     </div>
                     <button className="text-sm text-[#a89968] hover:text-black transition-colors">Browse Collections</button>
                 </div>
-                <div className="grid grid-cols-4 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
                     {notes
                         .filter(note => !note.isArchived && note.collectionId !== null)
                         .slice(0, 4)
@@ -212,3 +212,4 @@ export default function NotesSection({
         </>
     );
 }
+
