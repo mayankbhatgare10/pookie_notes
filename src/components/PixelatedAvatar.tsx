@@ -12,7 +12,7 @@ const avatarMap = {
   jethalal: 'https://z3759y9was.ufs.sh/f/SFmIfV4reUMk6lcvA5DQsovOQWFnVXDJCKUY0qyr4Twfg3Lj',
   akshay: 'https://z3759y9was.ufs.sh/f/SFmIfV4reUMkXbKQUKyrvdbCJVLp3ko4jSUNziI2WOPhfQZu',
   paresh: 'https://z3759y9was.ufs.sh/f/SFmIfV4reUMkUQ0UeyWw29eb6oTiG08cDalx1YEUuzKdjVRL',
-  pankaj: 'https://z3759y9was.ufs.sh/f/SFmIfV4reUMkMX05ywI8vZdrHiCNquxPUKI94Og1t6VnfcjG', // Using pookie logo as placeholder
+  pankaj: 'https://z3759y9was.ufs.sh/f/SFmIfV4reUMkGka3ZY8Z7IcCew6jWUGf3rsahQnYMBEXyPlV',
   rinki: 'https://z3759y9was.ufs.sh/f/SFmIfV4reUMk4od5rYkjfEORPJqZTCINkBpHzcYVMrsQa2oi',
   daya: 'https://z3759y9was.ufs.sh/f/SFmIfV4reUMkQRnnzCczsF14nHmwfvk0t52guSxMDObNpyZW',
   manju: 'https://z3759y9was.ufs.sh/f/SFmIfV4reUMkpQNeuQLSDjrxk5fIEinhvHqN1Pdc9VLG4Ww0',

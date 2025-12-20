@@ -71,14 +71,14 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
     return (
         <>
-            {/* Backdrop */}
+            {/* Backdrop - Covers entire screen with blur */}
             <div
-                className="fixed inset-0 bg-black/30 z-40 transition-opacity"
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] transition-all"
                 onClick={onClose}
             />
 
             {/* Modal */}
-            <div className="fixed right-0 top-0 h-full w-[420px] bg-white shadow-2xl z-50 overflow-y-auto">
+            <div className="fixed right-0 top-0 h-full w-[420px] bg-white shadow-2xl z-[70] overflow-y-auto">
                 {/* Hidden file input */}
                 <input
                     ref={fileInputRef}
@@ -179,32 +179,46 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                 <label className="block text-sm font-semibold text-black mb-3">
                                     Profile Picture
                                 </label>
-                                <div className="flex gap-2 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>
-                                    {avatars.map((avatar) => (
-                                        <div
-                                            key={avatar.id}
-                                            onClick={() => avatar.id === 'upload' ? triggerFileUpload() : setSelectedAvatar(avatar.id)}
-                                            className="flex-shrink-0 cursor-pointer"
-                                        >
-                                            <div className={`relative ${selectedAvatar === avatar.id ? 'ring-[3px] ring-[#ffd700]' : ''} rounded-full`}>
-                                                {avatar.id === 'upload' ? (
-                                                    <div className={`w-14 h-14 rounded-full bg-[#f5f4e8] flex items-center justify-center hover:bg-[#eeeee0] transition-colors overflow-hidden ${selectedAvatar === avatar.id ? '' : 'border border-[#e0e0e0]'}`}>
-                                                        {uploadedImage ? (
-                                                            <img src={uploadedImage} alt="Uploaded" className="w-full h-full object-cover" />
-                                                        ) : (
-                                                            <svg className="w-5 h-5 text-[#666]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                                                            </svg>
-                                                        )}
-                                                    </div>
-                                                ) : (
-                                                    <div className="w-14 h-14 rounded-full overflow-hidden bg-white hover:scale-105 transition-transform">
-                                                        <PixelatedAvatar type={avatar.type!} size={56} />
-                                                    </div>
-                                                )}
+                                <div className="relative">
+                                    <div
+                                        id="settings-avatar-scroll"
+                                        className="flex gap-2 overflow-x-auto overflow-y-hidden pb-2 cursor-grab active:cursor-grabbing"
+                                        style={{
+                                            scrollbarWidth: 'none',
+                                            msOverflowStyle: 'none',
+                                            WebkitOverflowScrolling: 'touch',
+                                            scrollBehavior: 'smooth'
+                                        }}
+                                        onWheel={(e) => {
+                                            e.currentTarget.scrollLeft += e.deltaY;
+                                        }}
+                                    >
+                                        {avatars.map((avatar) => (
+                                            <div
+                                                key={avatar.id}
+                                                onClick={() => avatar.id === 'upload' ? triggerFileUpload() : setSelectedAvatar(avatar.id)}
+                                                className="flex-shrink-0 cursor-pointer"
+                                            >
+                                                <div className={`relative ${selectedAvatar === avatar.id ? 'ring-[3px] ring-[#ffd700]' : ''} rounded-full`}>
+                                                    {avatar.id === 'upload' ? (
+                                                        <div className={`w-14 h-14 rounded-full bg-[#f5f4e8] flex items-center justify-center hover:bg-[#eeeee0] transition-colors overflow-hidden ${selectedAvatar === avatar.id ? '' : 'border border-[#e0e0e0]'}`}>
+                                                            {uploadedImage ? (
+                                                                <img src={uploadedImage} alt="Uploaded" className="w-full h-full object-cover" />
+                                                            ) : (
+                                                                <svg className="w-5 h-5 text-[#666]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                                                </svg>
+                                                            )}
+                                                        </div>
+                                                    ) : (
+                                                        <div className="w-14 h-14 rounded-full overflow-hidden bg-white hover:scale-105 transition-transform">
+                                                            <PixelatedAvatar type={avatar.type!} size={56} />
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
 

@@ -107,35 +107,52 @@ export default function SignupForm() {
           </div>
 
           {/* Avatar Selection - Horizontal Scrollable */}
-          <div className="mb-6">
-            <h2 className="text-sm font-semibold text-[#2d5016] mb-4">Choose your profile picture (or upload your own face):</h2>
-            <div className="flex gap-3 overflow-x-auto py-2" style={{ scrollbarWidth: 'none' }}>
-              {avatars.map((avatar) => (
-                <div
-                  key={avatar.id}
-                  onClick={() => avatar.id === 'upload' ? triggerFileUpload() : setSelectedAvatar(avatar.id)}
-                  className="flex-shrink-0 cursor-pointer transition-all"
-                >
-                  <div className={`relative ${selectedAvatar === avatar.id ? 'ring-[4px] ring-[#ffd700]' : ''} rounded-full`}>
-                    {avatar.id === 'upload' ? (
-                      <div className="w-14 h-14 rounded-full bg-[#e8e8e8] border border-gray-300 flex items-center justify-center hover:bg-gray-200 transition-colors overflow-hidden">
-                        {uploadedImage ? (
-                          <img src={uploadedImage} alt="Uploaded" className="w-full h-full object-cover rounded-full" />
-                        ) : (
-                          <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                          </svg>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="w-14 h-14 rounded-full overflow-hidden bg-white border-2 border-white shadow-sm hover:scale-105 transition-transform">
-                        <PixelatedAvatar type={avatar.type!} size={56} />
-                      </div>
-                    )}
+          <div className="mb-6 -mx-6 relative">
+            <h2 className="text-sm font-semibold text-[#2d5016] mb-4 px-6">Choose your profile picture (or upload your own face):</h2>
+
+            {/* Scroll Container */}
+            <div className="relative">
+              {/* Avatar Container */}
+              <div
+                id="avatar-scroll"
+                className="flex gap-3 overflow-x-auto overflow-y-hidden py-2 px-6 cursor-grab active:cursor-grabbing"
+                style={{
+                  scrollbarWidth: 'none',
+                  msOverflowStyle: 'none',
+                  WebkitOverflowScrolling: 'touch',
+                  scrollBehavior: 'smooth'
+                }}
+                onWheel={(e) => {
+                  e.currentTarget.scrollLeft += e.deltaY;
+                }}
+              >
+                {avatars.map((avatar) => (
+                  <div
+                    key={avatar.id}
+                    onClick={() => avatar.id === 'upload' ? triggerFileUpload() : setSelectedAvatar(avatar.id)}
+                    className="flex-shrink-0 cursor-pointer transition-all"
+                  >
+                    <div className={`relative ${selectedAvatar === avatar.id ? 'ring-[4px] ring-[#ffd700]' : ''} rounded-full`}>
+                      {avatar.id === 'upload' ? (
+                        <div className="w-14 h-14 rounded-full bg-[#e8e8e8] border border-gray-300 flex items-center justify-center hover:bg-gray-200 transition-colors overflow-hidden">
+                          {uploadedImage ? (
+                            <img src={uploadedImage} alt="Uploaded" className="w-full h-full object-cover rounded-full" />
+                          ) : (
+                            <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="w-14 h-14 rounded-full overflow-hidden bg-white border-2 border-white shadow-sm hover:scale-105 transition-transform">
+                          <PixelatedAvatar type={avatar.type!} size={56} />
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
 
