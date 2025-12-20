@@ -38,6 +38,9 @@ export default function Dashboard() {
     // Password Protection State
     const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
     const [pendingNote, setPendingNote] = useState<Note | null>(null);
+    const [pendingCollectionId, setPendingCollectionId] = useState<string | null>(null);
+    const [passwordPromptType, setPasswordPromptType] = useState<'note' | 'collection'>('note');
+    const [unlockedCollections, setUnlockedCollections] = useState<Set<string>>(new Set());
 
     const { showToast } = useToast();
 
@@ -57,6 +60,7 @@ export default function Dashboard() {
         // Check if note is private and has password
         if (note.isPrivate && note.passwordHash) {
             setPendingNote(note);
+            setPasswordPromptType('note');
             setShowPasswordPrompt(true);
         } else {
             setCurrentNote(note);
@@ -65,24 +69,61 @@ export default function Dashboard() {
     };
 
     const handlePasswordSuccess = async (password: string) => {
-        if (!pendingNote || !pendingNote.passwordHash) return;
+        if (passwordPromptType === 'note') {
+            if (!pendingNote || !pendingNote.passwordHash) return;
 
-        const isValid = await verifyPassword(password, pendingNote.passwordHash);
+            const isValid = await verifyPassword(password, pendingNote.passwordHash);
 
-        if (isValid) {
-            setCurrentNote(pendingNote);
-            setShowNoteEditor(true);
-            setShowPasswordPrompt(false);
-            setPendingNote(null);
-            showToast('Access granted! Welcome to your secret note. 🔓', 'success');
-        } else {
-            showToast('Wrong password! Nice try, hacker. 🚫', 'error');
+            if (isValid) {
+                setCurrentNote(pendingNote);
+                setShowNoteEditor(true);
+                setShowPasswordPrompt(false);
+                setPendingNote(null);
+                showToast('Access granted! Welcome to your secret note. 🔓', 'success');
+            } else {
+                showToast('Wrong password! Nice try, hacker. 🚫', 'error');
+            }
+        } else if (passwordPromptType === 'collection') {
+            if (!pendingCollectionId) return;
+
+            const collection = collections.find(c => c.id === pendingCollectionId);
+            if (!collection || !collection.passwordHash) return;
+
+            const isValid = await verifyPassword(password, collection.passwordHash);
+
+            if (isValid) {
+                setUnlockedCollections(prev => new Set([...prev, pendingCollectionId]));
+                setSelectedCollectionId(pendingCollectionId);
+                setShowPasswordPrompt(false);
+                setPendingCollectionId(null);
+                showToast('Collection unlocked! Your secrets await. 🔓', 'success');
+            } else {
+                showToast('Wrong password! This collection stays locked. 🚫', 'error');
+            }
         }
     };
 
     const handlePasswordCancel = () => {
         setShowPasswordPrompt(false);
         setPendingNote(null);
+        setPendingCollectionId(null);
+    };
+
+    const handleSelectCollection = (collectionId: string | null) => {
+        if (!collectionId) {
+            setSelectedCollectionId(null);
+            return;
+        }
+
+        const collection = collections.find(c => c.id === collectionId);
+
+        if (collection?.isPrivate && collection.passwordHash && !unlockedCollections.has(collectionId)) {
+            setPendingCollectionId(collectionId);
+            setPasswordPromptType('collection');
+            setShowPasswordPrompt(true);
+        } else {
+            setSelectedCollectionId(collectionId);
+        }
     };
 
     const handleCreate = async (noteData: any) => {
@@ -177,7 +218,7 @@ export default function Dashboard() {
                 isOpen={showCollectionsGrid}
                 onClose={() => setShowCollectionsGrid(false)}
                 onAddNew={() => setShowNewCollectionModal(true)}
-                onSelectCollection={setSelectedCollectionId}
+                onSelectCollection={handleSelectCollection}
                 selectedCollectionId={selectedCollectionId}
                 collections={collections}
             />
@@ -214,7 +255,7 @@ export default function Dashboard() {
                 isOpen={showPasswordPrompt}
                 onClose={handlePasswordCancel}
                 onSuccess={handlePasswordSuccess}
-                itemName="note"
+                itemName={passwordPromptType}
             />
         </div>
     );

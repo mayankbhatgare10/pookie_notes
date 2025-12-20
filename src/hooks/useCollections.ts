@@ -52,6 +52,8 @@ export const useCollections = () => {
                 name: collection.name,
                 emoji: collection.emoji,
                 tags: collection.tags,
+                isPrivate: collection.isPrivate,
+                passwordHash: collection.passwordHash,
             }));
 
             setCollections(formattedCollections);
@@ -76,6 +78,8 @@ export const useCollections = () => {
                 name: newCollection.name,
                 emoji: newCollection.emoji,
                 tags: newCollection.tags,
+                isPrivate: newCollection.isPrivate,
+                passwordHash: newCollection.passwordHash,
             };
 
             setCollections([...collections, formattedCollection]);
