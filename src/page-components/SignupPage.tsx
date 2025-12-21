@@ -132,33 +132,57 @@ export default function SignupForm() {
         onChange={handleFileUpload}
       />
 
-      {/* Header */}
-      <div className="w-full px-4 md:px-8 py-4 md:py-6 flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4 animate-slide-down">
-        <div className="flex items-center gap-2 md:gap-3">
-          <Image
-            src="https://z3759y9was.ufs.sh/f/SFmIfV4reUMkMX05ywI8vZdrHiCNquxPUKI94Og1t6VnfcjG"
-            alt="Pookie Notes Logo"
-            width={28}
-            height={28}
-            className="object-contain md:w-8 md:h-8"
-            unoptimized
-          />
-          <span className="text-xl md:text-2xl font-bold text-[#2d5016]">Pookie Notes</span>
-        </div>
-        <div className="flex items-center gap-2 md:gap-4">
-          <span className="text-[#2d5016] text-sm md:text-base hidden sm:inline">Already have an account?</span>
+      {/* Header - Login button only on mobile, full header on desktop */}
+      <div className="w-full px-4 md:px-8 py-4 md:py-6 animate-slide-down">
+        {/* Mobile: Login button at top right with text */}
+        <div className="flex justify-end items-center gap-2 md:hidden">
+          <span className="text-[#2d5016] text-xs">Already have an account?</span>
           <Link href="/login">
-            <button className="bg-[#ffd700] hover:bg-[#ffed4e] px-4 md:px-6 py-2 md:py-2.5 rounded-full text-black font-semibold transition-colors text-xs md:text-sm border-2 border-black">
-              <span className="hidden sm:inline">Log in, loser</span>
-              <span className="sm:hidden">Log in</span>
+            <button className="bg-[#ffd700] hover:bg-[#ffed4e] px-4 py-2 rounded-full text-black font-semibold transition-colors text-xs border-2 border-black">
+              Log in
             </button>
           </Link>
+        </div>
+
+        {/* Desktop: Full header with logo and login */}
+        <div className="hidden md:flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <Image
+              src="https://z3759y9was.ufs.sh/f/SFmIfV4reUMkMX05ywI8vZdrHiCNquxPUKI94Og1t6VnfcjG"
+              alt="Pookie Notes Logo"
+              width={32}
+              height={32}
+              className="object-contain"
+              unoptimized
+            />
+            <span className="text-2xl font-bold text-[#2d5016]">Pookie Notes</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="text-[#2d5016] text-base">Already have an account?</span>
+            <Link href="/login">
+              <button className="bg-[#ffd700] hover:bg-[#ffed4e] px-6 py-2.5 rounded-full text-black font-semibold transition-colors text-sm border-2 border-black">
+                Log in, loser
+              </button>
+            </Link>
+          </div>
         </div>
       </div>
 
       {/* Main Content - Centered */}
-      <div className="flex-1 flex items-center justify-center px-6 py-8">
+      <div className="flex-1 flex items-center justify-center px-6 py-4 md:py-8">
         <div className="w-full max-w-md animate-scale-in">
+          {/* Mobile Logo - Positioned near title */}
+          <div className="flex justify-center mb-4 md:hidden">
+            <Image
+              src="https://z3759y9was.ufs.sh/f/SFmIfV4reUMkMX05ywI8vZdrHiCNquxPUKI94Og1t6VnfcjG"
+              alt="Pookie Notes Logo"
+              width={80}
+              height={80}
+              className="object-contain"
+              unoptimized
+            />
+          </div>
+
           {/* Title */}
           <div className="text-center mb-6">
             <h1 className="text-3xl font-bold text-[#2d5016] mb-2">Commitment Issues?</h1>

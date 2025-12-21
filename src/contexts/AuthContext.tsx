@@ -87,9 +87,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
         };
 
+        // Intercept page unload/refresh to show custom modal
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            // Only intercept if user is logged in and not already pending refresh
+            if (user && !pendingRefresh.current) {
+                console.log('⚠️ Page unload detected - showing modal');
+
+                // Prevent the default unload
+                e.preventDefault();
+
+                // Show our custom modal
+                setShowRefreshModal(true);
+
+                // Set returnValue to trigger browser's confirmation as fallback
+                // This is required by modern browsers
+                e.returnValue = '';
+
+                // Return empty string (browser will show generic message)
+                return '';
+            }
+        };
+
         // Add event listeners
         if (user) {
             window.addEventListener('keydown', handleKeyDown, true); // Use capture phase
+            window.addEventListener('beforeunload', handleBeforeUnload);
         }
 
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -159,6 +181,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return () => {
             unsubscribe();
             window.removeEventListener('keydown', handleKeyDown, true);
+            window.removeEventListener('beforeunload', handleBeforeUnload);
         };
     }, [user]); // Add user to dependencies so listener updates
 

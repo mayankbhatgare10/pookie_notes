@@ -21,6 +21,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     const [selectedAvatar, setSelectedAvatar] = useState('jethalal');
     const [uploadedImage, setUploadedImage] = useState<string | null>(null);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [showReLoginPrompt, setShowReLoginPrompt] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [showPassword, setShowPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
@@ -94,11 +95,29 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             });
             setIsEditing(false);
             showToast('Profile updated! Looking good, Pookie! 😎', 'success');
+
+            // Show re-login prompt after a short delay
+            setTimeout(() => {
+                setShowReLoginPrompt(true);
+            }, 500);
         } catch (error) {
             console.error('Error saving profile:', error);
             showToast('Failed to save profile. Even we make mistakes sometimes. 🤷', 'error');
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handleReLogin = async () => {
+        const { logout: logoutFn } = useAuth();
+        try {
+            showToast('Logging you out... See you in 3 seconds! 👋', 'info');
+            await logoutFn();
+            setTimeout(() => {
+                window.location.href = '/login';
+            }, 1000);
+        } catch (error) {
+            console.error('Logout error:', error);
         }
     };
 
@@ -393,6 +412,54 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                     className="flex-1 py-3 rounded-full bg-red-500 hover:bg-red-600 border-2 border-black text-white font-bold text-sm transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px]"
                                 >
                                     Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </>
+            )}
+
+            {/* Re-Login Prompt Modal */}
+            {showReLoginPrompt && (
+                <>
+                    <div
+                        className="fixed inset-0 bg-black/50 z-[60] transition-opacity"
+                        onClick={() => setShowReLoginPrompt(false)}
+                    />
+                    <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[70] w-[90%] max-w-[420px]">
+                        <div className="bg-white rounded-[20px] border-2 border-black p-6 shadow-2xl">
+                            {/* Icon */}
+                            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#fff4e6] flex items-center justify-center">
+                                <svg className="w-8 h-8 text-[#ffd700]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+
+                            {/* Title */}
+                            <h3 className="text-xl font-bold text-black text-center mb-2">
+                                Profile Updated! 🎉
+                            </h3>
+
+                            {/* Sarcastic Message */}
+                            <p className="text-sm text-[#666] text-center mb-6">
+                                Your changes are saved! But here's the thing... to see them <span className="font-bold">everywhere</span> (yes, including that stubborn dropdown), you'll need to log out and back in.
+                                <br /><br />
+                                I know, I know... it's 2025 and we still need to do this. Technology is amazing! 🙄
+                            </p>
+
+                            {/* Buttons */}
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setShowReLoginPrompt(false)}
+                                    className="flex-1 py-3 rounded-full bg-white border-2 border-black text-black font-bold text-sm hover:bg-[#f5f4e8] transition-colors"
+                                >
+                                    Later, I Guess
+                                </button>
+                                <button
+                                    onClick={handleReLogin}
+                                    className="flex-1 py-3 rounded-full bg-[#ffd700] hover:bg-[#ffed4e] border-2 border-black text-black font-bold text-sm transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px]"
+                                >
+                                    Fine, Log Me Out
                                 </button>
                             </div>
                         </div>

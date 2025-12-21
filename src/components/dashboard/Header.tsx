@@ -89,7 +89,7 @@ export default function Header({ showCollectionsGrid, setShowCollectionsGrid, se
                         className="relative focus:outline-none"
                     >
                         <div className="w-8 h-8 md:w-9 md:h-9 rounded-full border-2 border-black overflow-hidden shadow-sm hover:scale-105 transition-transform bg-white">
-                            <UserAvatar avatar={profile?.avatar} size={36} />
+                            <UserAvatar key={profile?.avatar || 'default'} avatar={profile?.avatar} size={36} />
                         </div>
                     </button>
 
@@ -97,7 +97,7 @@ export default function Header({ showCollectionsGrid, setShowCollectionsGrid, se
                         <div className="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-lg z-50 border border-[#e0e0e0]">
                             <div className="px-4 py-3 border-b border-[#f0f0f0] flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full border-2 border-black overflow-hidden bg-white flex-shrink-0">
-                                    <UserAvatar avatar={profile?.avatar} size={40} />
+                                    <UserAvatar key={profile?.avatar || 'default-dropdown'} avatar={profile?.avatar} size={40} />
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="font-semibold text-sm text-black truncate">
