@@ -18,6 +18,7 @@ import { useState, useEffect, useRef } from 'react';
 import { TagNode } from './TagNode';
 import EditorToolbar from './editor/EditorToolbar';
 import ExportMenu from './editor/ExportMenu';
+import CommandMenu from './editor/CommandMenu';
 
 interface NoteEditorProps {
     isOpen: boolean;
@@ -244,6 +245,15 @@ export default function NoteEditor({ isOpen, onClose, note, onSave, onDelete, co
                             </div>
                         )}
                         <EditorContent editor={editor} style={{ fontSize: `${fontSize}px`, fontFamily }} />
+
+                        {/* Command Menu */}
+                        <CommandMenu
+                            isOpen={showCommandMenu}
+                            position={menuPosition}
+                            search={commandSearch}
+                            editor={editor}
+                            onClose={() => setShowCommandMenu(false)}
+                        />
                     </div>
                 </div>
 

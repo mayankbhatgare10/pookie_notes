@@ -73,7 +73,7 @@ export async function createNote(
             passwordHash = await bcrypt.hash(noteData.password, 10);
         }
 
-        const note: Omit<Note, 'id'> = {
+        const note: any = {
             userId,
             title: noteData.title,
             content: noteData.content || '',
@@ -83,10 +83,14 @@ export async function createNote(
             isArchived: false,
             collectionId: noteData.collectionId || null,
             isPrivate: noteData.isPrivate || false,
-            passwordHash,
             createdAt: now,
             updatedAt: now,
         };
+
+        // Only add passwordHash if it exists
+        if (passwordHash) {
+            note.passwordHash = passwordHash;
+        }
 
         await setDoc(noteRef, note);
 

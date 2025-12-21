@@ -569,7 +569,7 @@ SOFTWARE.
 **Mayank Bhatgare**
 
 - GitHub: [@mayankbhatgare10](https://github.com/mayankbhatgare10)
-- Email: mayankbhatgare10@gmail.com
+- Email: mayankbhatgare1054@gmail.com
 
 ---
 

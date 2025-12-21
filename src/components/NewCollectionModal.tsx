@@ -24,7 +24,7 @@ export default function NewCollectionModal({ isOpen, onClose }: NewCollectionMod
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const [tags, setTags] = useState<string[]>(['aesthetic', 'ideas']);
+    const [tags, setTags] = useState<string[]>([]);
     const [newTag, setNewTag] = useState('');
     const emojiPickerRef = useRef<HTMLDivElement>(null);
 
@@ -76,7 +76,7 @@ export default function NewCollectionModal({ isOpen, onClose }: NewCollectionMod
             setLockEnabled(false);
             setPassword('');
             setConfirmPassword('');
-            setTags(['aesthetic', 'ideas']);
+            setTags([]);
 
             onClose();
         } catch (error) {

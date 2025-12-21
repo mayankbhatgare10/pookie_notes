@@ -239,7 +239,7 @@ export default function Dashboard() {
                 note={currentNote}
                 onSave={handleSaveNote}
                 onDelete={handleDeleteNote}
-                collectionTags={selectedCollectionId ? collections.find(c => c.id === selectedCollectionId)?.tags || [] : []}
+                collectionTags={currentNote?.collectionId ? collections.find(c => c.id === currentNote.collectionId)?.tags || [] : []}
             />
 
             <MoveNoteModal
