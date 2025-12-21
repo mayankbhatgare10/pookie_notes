@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { StarIcon, MultiDotsIcon, EditIcon, ArchiveIcon, MoveIcon, TrashIcon } from '@/components/icons';
+import { StarIcon, MultiDotsIcon, EditIcon, ArchiveIcon, MoveIcon, TrashIcon, ShareIcon } from '@/components/icons';
 
 interface NoteCardProps {
     id: string;
@@ -15,6 +15,7 @@ interface NoteCardProps {
     onArchive: () => void;
     onDelete: () => void;
     onMove?: () => void;
+    onShare?: () => void;
     onClick: () => void;
 }
 
@@ -30,6 +31,7 @@ export default function NoteCard({
     onArchive,
     onDelete,
     onMove,
+    onShare,
     onClick,
 }: NoteCardProps) {
     const [showMenu, setShowMenu] = useState(false);
@@ -92,7 +94,7 @@ export default function NoteCard({
 
                 {/* Dropdown Menu */}
                 {showMenu && (
-                    <div className="absolute right-0 mt-2 w-40 bg-white rounded-xl shadow-lg border border-[#e0e0e0] py-1 z-10 animate-slide-down">
+                    <div className="absolute right-0 mt-2 w-44 bg-white rounded-xl shadow-lg border border-[#e0e0e0] py-1 z-10 animate-slide-down max-h-[280px] overflow-y-auto">
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -115,6 +117,19 @@ export default function NoteCard({
                             <StarIcon className={`w-4 h-4 ${isStarred ? 'fill-current' : ''}`} />
                             {isStarred ? 'Unstar' : 'Star'}
                         </button>
+                        {onShare && (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setShowMenu(false);
+                                    onShare();
+                                }}
+                                className="w-full px-4 py-2 text-left text-sm text-black hover:bg-[#f5f4e8] transition-colors flex items-center gap-2"
+                            >
+                                <ShareIcon className="w-4 h-4" />
+                                Share
+                            </button>
+                        )}
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();

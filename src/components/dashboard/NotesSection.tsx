@@ -15,12 +15,19 @@ interface NotesSectionProps {
     onStarNote: (id: string) => void;
     onArchiveNote: (id: string) => void;
     onMoveNote: (id: string) => void;
+    onShareNote?: (note: Note) => void;
 }
 
 export default function NotesSection({
     notes, selectedCollectionId, activeTab,
-    onNewNote, onEditNote, onDeleteNote, onStarNote, onArchiveNote, onMoveNote
+    onNewNote, onEditNote, onDeleteNote, onStarNote, onArchiveNote, onMoveNote, onShareNote
 }: NotesSectionProps) {
+
+    const handleShare = (note: Note) => {
+        if (onShareNote) {
+            onShareNote(note);
+        }
+    };
 
     if (activeTab === 'archived') {
         return (
@@ -44,6 +51,7 @@ export default function NotesSection({
                                 onArchive={() => onArchiveNote(note.id)}
                                 onDelete={() => onDeleteNote(note.id)}
                                 onMove={() => onMoveNote(note.id)}
+                                onShare={() => handleShare(note)}
                                 onClick={() => onEditNote(note)}
                             />
                         ))}
@@ -93,6 +101,7 @@ export default function NotesSection({
                                 onArchive={() => onArchiveNote(note.id)}
                                 onDelete={() => onDeleteNote(note.id)}
                                 onMove={() => onMoveNote(note.id)}
+                                onShare={() => handleShare(note)}
                                 onClick={() => onEditNote(note)}
                             />
                         ))}
@@ -140,6 +149,7 @@ export default function NotesSection({
                                 onArchive={() => onArchiveNote(note.id)}
                                 onDelete={() => onDeleteNote(note.id)}
                                 onMove={() => onMoveNote(note.id)}
+                                onShare={() => handleShare(note)}
                                 onClick={() => onEditNote(note)}
                             />
                         ))}
@@ -174,6 +184,7 @@ export default function NotesSection({
                                     onArchive={() => onArchiveNote(note.id)}
                                     onDelete={() => onDeleteNote(note.id)}
                                     onMove={() => onMoveNote(note.id)}
+                                    onShare={() => handleShare(note)}
                                     onClick={() => onEditNote(note)}
                                 />
                             ))}
@@ -209,6 +220,7 @@ export default function NotesSection({
                                     onArchive={() => onArchiveNote(note.id)}
                                     onDelete={() => onDeleteNote(note.id)}
                                     onMove={() => onMoveNote(note.id)}
+                                    onShare={() => handleShare(note)}
                                     onClick={() => onEditNote(note)}
                                 />
                             ))}

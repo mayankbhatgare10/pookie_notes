@@ -200,6 +200,19 @@ export default function Dashboard() {
                             setNoteToMoveId(id);
                             setShowMoveModal(true);
                         }}
+                        onShareNote={(note) => {
+                            if (navigator.share) {
+                                navigator.share({
+                                    title: note.title,
+                                    text: note.content?.replace(/<[^>]*>/g, '').substring(0, 200) || '',
+                                }).catch(() => {
+                                    showToast('Share cancelled. Your secrets are safe! 🤫', 'info');
+                                });
+                            } else {
+                                navigator.clipboard.writeText(`${note.title}\n\n${note.content?.replace(/<[^>]*>/g, '') || ''}`);
+                                showToast('Note copied to clipboard! Share away! 📋', 'success');
+                            }
+                        }}
                     />
                 </div>
             </div>
