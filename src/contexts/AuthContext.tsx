@@ -93,17 +93,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+            // Check if this is a page refresh using performance API
+            const isPageRefresh = typeof window !== 'undefined' &&
+                window.performance &&
+                window.performance.navigation.type === 1;
+
+            // Check if there's an active session flag (this is set on login and cleared on refresh)
+            const hasActiveSession = typeof window !== 'undefined' &&
+                (window as any).__pookie_session_active === true;
+
             console.log('🔐 Auth state changed:', {
                 hasUser: !!firebaseUser,
                 isInitialMount: isInitialMount.current,
-                hasSession: typeof window !== 'undefined' && sessionStorage.getItem(SESSION_KEY) === 'true'
+                hasActiveSession,
+                isPageRefresh,
+                navigationType: window?.performance?.navigation?.type
             });
 
             if (firebaseUser) {
-                // Check if there's an active session
-                const hasActiveSession = typeof window !== 'undefined' && sessionStorage.getItem(SESSION_KEY) === 'true';
-
-                // On initial mount, if user exists in Firebase but no session, it's a refresh
+                // On initial mount, if user exists in Firebase but no session flag, it's a refresh
                 if (isInitialMount.current && !hasActiveSession) {
                     console.log('🚪 Page refresh detected - logging out user');
                     // This is a page refresh - log them out
@@ -194,9 +202,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 await createUserProfile(userCredential.user, additionalData);
             }
 
-            // Set active session
+            // Set active session flag (this will be cleared on page refresh)
             if (typeof window !== 'undefined') {
-                sessionStorage.setItem(SESSION_KEY, 'true');
+                (window as any).__pookie_session_active = true;
             }
         }
     };
@@ -207,9 +215,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         await signInWithEmailAndPassword(auth, email, password);
 
-        // Set active session
+        // Set active session flag (this will be cleared on page refresh)
         if (typeof window !== 'undefined') {
-            sessionStorage.setItem(SESSION_KEY, 'true');
+            (window as any).__pookie_session_active = true;
         }
     };
 
@@ -234,9 +242,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const userExists = await checkUserProfile(user.uid);
         setIsNewUser(!userExists);
 
-        // Set active session
+        // Set active session flag (this will be cleared on page refresh)
         if (typeof window !== 'undefined') {
-            sessionStorage.setItem(SESSION_KEY, 'true');
+            (window as any).__pookie_session_active = true;
         }
 
         return { isNewUser: !userExists };
@@ -247,9 +255,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             throw new Error('Firebase Auth is not initialized. Please set up your Firebase credentials.');
         }
 
-        // Clear session
+        // Clear session flag
         if (typeof window !== 'undefined') {
-            sessionStorage.removeItem(SESSION_KEY);
+            delete (window as any).__pookie_session_active;
         }
 
         await signOut(auth);
@@ -265,9 +273,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Logout and show sarcastic message
         const randomMessage = SARCASTIC_MESSAGES[Math.floor(Math.random() * SARCASTIC_MESSAGES.length)];
 
-        // Clear session
+        // Clear session flag
         if (typeof window !== 'undefined') {
-            sessionStorage.removeItem(SESSION_KEY);
+            delete (window as any).__pookie_session_active;
             sessionStorage.setItem('logout_message', randomMessage);
         }
 
