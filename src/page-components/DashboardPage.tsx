@@ -160,7 +160,7 @@ export default function Dashboard() {
             )}
 
             {/* Sidebar */}
-            <div className={`fixed md:static inset-y-0 left-0 z-50 transform transition-transform duration-300 md:transform-none ${showMobileSidebar ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+            <div className={`fixed md:static inset-y-0 left-0 z-50 transform transition-transform duration-300 md:transform-none shadow-xl md:shadow-none ${showMobileSidebar ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
                 }`}>
                 <Sidebar />
             </div>
@@ -201,15 +201,63 @@ export default function Dashboard() {
                             setShowMoveModal(true);
                         }}
                         onShareNote={(note) => {
+                            // Convert HTML content to readable text with proper formatting
+                            const formatContent = (html: string) => {
+                                if (!html) return '';
+
+                                // Create a temporary div to parse HTML
+                                const temp = document.createElement('div');
+                                temp.innerHTML = html;
+
+                                // Process task lists
+                                const taskItems = temp.querySelectorAll('li[data-type="taskItem"]');
+                                taskItems.forEach(item => {
+                                    const checkbox = item.querySelector('input[type="checkbox"]');
+                                    const isChecked = checkbox?.getAttribute('checked') !== null;
+                                    const text = item.textContent || '';
+                                    const prefix = isChecked ? '☑' : '☐';
+                                    item.textContent = `${prefix} ${text}`;
+                                });
+
+                                // Replace common HTML elements with text equivalents
+                                let text = temp.innerHTML;
+                                text = text.replace(/<br\s*\/?>/gi, '\n');
+                                text = text.replace(/<\/p>/gi, '\n');
+                                text = text.replace(/<p>/gi, '');
+                                text = text.replace(/<\/li>/gi, '\n');
+                                text = text.replace(/<li>/gi, '• ');
+                                text = text.replace(/<\/ul>/gi, '\n');
+                                text = text.replace(/<ul>/gi, '');
+                                text = text.replace(/<\/ol>/gi, '\n');
+                                text = text.replace(/<ol>/gi, '');
+                                text = text.replace(/<\/h[1-6]>/gi, '\n');
+                                text = text.replace(/<h[1-6]>/gi, '');
+                                text = text.replace(/<[^>]*>/g, '');
+
+                                // Decode HTML entities
+                                const textarea = document.createElement('textarea');
+                                textarea.innerHTML = text;
+                                text = textarea.value;
+
+                                // Clean up extra newlines
+                                text = text.replace(/\n{3,}/g, '\n\n');
+                                text = text.trim();
+
+                                return text;
+                            };
+
+                            const formattedContent = formatContent(note.content || '');
+                            const shareText = `${note.title}\n\n${formattedContent}`;
+
                             if (navigator.share) {
                                 navigator.share({
                                     title: note.title,
-                                    text: note.content?.replace(/<[^>]*>/g, '').substring(0, 200) || '',
+                                    text: shareText,
                                 }).catch(() => {
                                     showToast('Share cancelled. Your secrets are safe! 🤫', 'info');
                                 });
                             } else {
-                                navigator.clipboard.writeText(`${note.title}\n\n${note.content?.replace(/<[^>]*>/g, '') || ''}`);
+                                navigator.clipboard.writeText(shareText);
                                 showToast('Note copied to clipboard! Share away! 📋', 'success');
                             }
                         }}

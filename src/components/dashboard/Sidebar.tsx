@@ -17,39 +17,39 @@ export default function Sidebar() {
     const { time, period, dayDate } = formatTime(currentTime);
 
     return (
-        <div className="w-[280px] bg-[#f5f4e8] px-8 py-8 flex flex-col">
+        <div className="w-[280px] md:w-[280px] bg-[#f5f4e8] px-4 md:px-8 py-6 md:py-8 flex flex-col h-screen overflow-y-auto">
             {/* Clock */}
-            <div className="bg-white rounded-[20px] px-6 py-6 mb-6 text-center shadow-sm">
+            <div className="bg-white rounded-[16px] md:rounded-[20px] px-4 md:px-6 py-4 md:py-6 mb-4 md:mb-6 text-center shadow-sm">
                 <div className="mb-2 flex items-end justify-center gap-1.5">
-                    <span className="text-[52px] font-bold leading-none tracking-tight text-black">
+                    <span className="text-[40px] md:text-[52px] font-bold leading-none tracking-tight text-black">
                         {time}
                     </span>
-                    <span className="text-[16px] font-bold text-[#d4a574] mb-2">
+                    <span className="text-[14px] md:text-[16px] font-bold text-[#d4a574] mb-1 md:mb-2">
                         {period}
                     </span>
                 </div>
                 <div className="inline-block bg-[#fff4e6] rounded-lg px-4 py-1.5">
-                    <span className="text-[10px] text-[#d4a574] tracking-wide font-semibold">
+                    <span className="text-[9px] md:text-[10px] text-[#d4a574] tracking-wide font-semibold">
                         {dayDate}
                     </span>
                 </div>
             </div>
 
             {/* Quote of the Day */}
-            <div className="mb-6 bg-[#e8e4d4] rounded-[20px] px-6 py-6">
-                <h2 className="text-[13px] font-bold leading-tight mb-3 text-black uppercase tracking-wide">
+            <div className="mb-4 md:mb-6 bg-[#e8e4d4] rounded-[16px] md:rounded-[20px] px-4 md:px-6 py-4 md:py-6">
+                <h2 className="text-[11px] md:text-[13px] font-bold leading-tight mb-2 md:mb-3 text-black uppercase tracking-wide">
                     Quote of the Day
                 </h2>
-                <p className="text-[12px] text-black leading-relaxed mb-2">
+                <p className="text-[11px] md:text-[12px] text-black leading-relaxed mb-2">
                     "{THOUGHTS[0].quote}"
                 </p>
-                <p className="text-[11px] text-[#666] font-medium text-right">
+                <p className="text-[10px] md:text-[11px] text-[#666] font-medium text-right">
                     — {THOUGHTS[0].author}
                 </p>
             </div>
 
             {/* Streak & Calendar */}
-            <div className="bg-white rounded-[20px] px-6 py-6 shadow-sm">
+            <div className="bg-white rounded-[16px] md:rounded-[20px] px-4 md:px-6 py-4 md:py-6 shadow-sm">
                 <StreakCalendar currentTime={currentTime} />
             </div>
         </div>

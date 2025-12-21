@@ -94,14 +94,14 @@ export default function NoteCard({
 
                 {/* Dropdown Menu */}
                 {showMenu && (
-                    <div className="absolute right-0 mt-2 w-44 bg-white rounded-xl shadow-lg border border-[#e0e0e0] py-1 z-10 animate-slide-down max-h-[280px] overflow-y-auto">
+                    <div className="absolute right-0 mt-2 w-44 bg-white rounded-xl shadow-lg border border-[#e0e0e0] py-1 z-10 animate-slide-down max-h-[240px] overflow-y-auto">
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
                                 setShowMenu(false);
                                 onEdit();
                             }}
-                            className="w-full px-4 py-2 text-left text-sm text-black hover:bg-[#f5f4e8] transition-colors flex items-center gap-2"
+                            className="w-full px-4 py-2.5 text-left text-sm text-black hover:bg-[#f5f4e8] transition-colors flex items-center gap-2"
                         >
                             <EditIcon className="w-4 h-4" />
                             Edit
