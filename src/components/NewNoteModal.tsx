@@ -119,26 +119,6 @@ export default function NewNoteModal({
                         />
                     </div>
 
-                    {/* Color Selection */}
-                    <div className="mb-5">
-                        <label className="block text-[9px] font-bold text-[#666] uppercase tracking-wider mb-2">
-                            Note Color
-                        </label>
-                        <div className="grid grid-cols-8 gap-2">
-                            {colors.map((color) => (
-                                <button
-                                    key={color.value}
-                                    onClick={() => setSelectedColor(color.value)}
-                                    className={`w-10 h-10 rounded-lg transition-all ${selectedColor === color.value
-                                        ? 'ring-2 ring-black scale-110'
-                                        : 'hover:scale-105'
-                                        }`}
-                                    style={{ backgroundColor: color.value }}
-                                    title={color.name}
-                                />
-                            ))}
-                        </div>
-                    </div>
 
                     {/* Collection Selection - Hidden if creating from collection */}
                     {!selectedCollectionId && (

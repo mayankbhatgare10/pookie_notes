@@ -1,0 +1,117 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check if user owns the resource
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Helper function to validate connected notes structure
+    function validConnectedNotes() {
+      return !request.resource.data.keys().hasAny(['connectedNotes']) ||
+        (
+          request.resource.data.connectedNotes is list &&
+          request.resource.data.connectedNotes.size() <= 50 &&
+          (
+            request.resource.data.connectedNotes.size() == 0 ||
+            request.resource.data.connectedNotes[0].keys().hasAll(['noteId', 'connectionType', 'createdAt'])
+          )
+        );
+    }
+    
+    // Users collection - users can only read/write their own profile
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+      
+      // User profile subcollection
+      match /profile/{document=**} {
+        allow read, write: if isOwner(userId);
+      }
+      
+      // Notes subcollection under user
+      match /notes/{noteId} {
+        // Allow read if user owns the note
+        allow read: if isOwner(userId);
+        
+        // Allow create if user is authenticated and userId matches
+        allow create: if isOwner(userId) &&
+          request.resource.data.userId == userId &&
+          validConnectedNotes();
+        
+        // Allow update if user owns the note
+        allow update: if isOwner(userId) &&
+          validConnectedNotes();
+        
+        // Allow delete if user owns the note
+        allow delete: if isOwner(userId);
+      }
+      
+      // Collections subcollection under user
+      match /collections/{collectionId} {
+        // Allow read if user owns the collection
+        allow read: if isOwner(userId);
+        
+        // Allow create if user is authenticated
+        // If isPrivate is true, passwordHash must be provided
+        allow create: if isOwner(userId) &&
+          (!request.resource.data.keys().hasAny(['isPrivate']) ||
+           !request.resource.data.isPrivate || 
+           (request.resource.data.isPrivate && request.resource.data.passwordHash != null));
+        
+        // Allow update if user owns the collection
+        // If changing to private, passwordHash must be provided
+        allow update: if isOwner(userId) &&
+          (!request.resource.data.keys().hasAny(['isPrivate']) ||
+           !request.resource.data.isPrivate || 
+           (request.resource.data.isPrivate && request.resource.data.passwordHash != null));
+        
+        // Allow delete if user owns the collection
+        allow delete: if isOwner(userId);
+      }
+    }
+    
+    // Legacy notes collection (for backward compatibility)
+    // Redirect to use users/{userId}/notes instead
+    match /notes/{noteId} {
+      allow read: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+      
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid &&
+        (!request.resource.data.isPrivate || 
+         (request.resource.data.isPrivate && request.resource.data.passwordHash != null));
+      
+      allow update: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid &&
+        request.resource.data.userId == resource.data.userId &&
+        (!request.resource.data.isPrivate || 
+         (request.resource.data.isPrivate && request.resource.data.passwordHash != null)) &&
+        validConnectedNotes();
+      
+      allow delete: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+    }
+    
+    // Legacy collections (for backward compatibility)
+    match /collections/{collectionId} {
+      allow read: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+      
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid;
+      
+      allow update: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid &&
+        request.resource.data.userId == resource.data.userId;
+      
+      allow delete: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+    }
+  }
+}

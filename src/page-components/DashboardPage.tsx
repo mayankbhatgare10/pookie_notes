@@ -301,6 +301,13 @@ export default function Dashboard() {
                 onSave={handleSaveNote}
                 onDelete={handleDeleteNote}
                 collectionTags={currentNote?.collectionId ? collections.find(c => c.id === currentNote.collectionId)?.tags || [] : []}
+                allNotes={notes}
+                onNavigateToNote={(noteId) => {
+                    const targetNote = notes.find(n => n.id === noteId);
+                    if (targetNote) {
+                        setCurrentNote(targetNote);
+                    }
+                }}
             />
 
             <MoveNoteModal

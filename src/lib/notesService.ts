@@ -28,6 +28,11 @@ export interface Note {
     collectionId: string | null;
     isPrivate: boolean;
     passwordHash?: string; // Optional: only for private notes
+    connectedNotes?: any[]; // Connected notes for linking
+    metadata?: {
+        totalConnections?: number;
+        lastModified?: string;
+    };
     createdAt: Timestamp | FieldValue | string;
     updatedAt: Timestamp | FieldValue | string;
 }
@@ -64,7 +69,7 @@ export async function createNote(
     }
 
     try {
-        const noteRef = doc(collection(db, 'notes'));
+        const noteRef = doc(collection(db, 'users', userId, 'notes'));
         const now = serverTimestamp();
 
         // Hash password if provided
@@ -85,6 +90,12 @@ export async function createNote(
             isPrivate: noteData.isPrivate || false,
             createdAt: now,
             updatedAt: now,
+            connectedNotes: [], // Initialize empty connections array
+            metadata: {
+                createdAt: new Date().toISOString(),
+                lastModified: new Date().toISOString(),
+                totalConnections: 0,
+            },
         };
 
         // Only add passwordHash if it exists
@@ -114,16 +125,24 @@ export async function getUserNotes(userId: string): Promise<Note[]> {
 
     try {
         const notesQuery = query(
-            collection(db, 'notes'),
-            where('userId', '==', userId)
+            collection(db, 'users', userId, 'notes')
             // Removed orderBy to avoid index requirement - will sort client-side
         );
 
         const snapshot = await getDocs(notesQuery);
-        const notes = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-        })) as Note[];
+        const notes = snapshot.docs.map(doc => {
+            const data = doc.data();
+            console.log('📄 Raw note data from Firestore:', {
+                id: doc.id,
+                hasConnectedNotes: !!data.connectedNotes,
+                connectedNotes: data.connectedNotes,
+                allFields: Object.keys(data)
+            });
+            return {
+                id: doc.id,
+                ...data,
+            };
+        }) as Note[];
 
         // Sort by updatedAt client-side (most recent first)
         return notes.sort((a, b) => {
@@ -140,13 +159,13 @@ export async function getUserNotes(userId: string): Promise<Note[]> {
 /**
  * Get a specific note by ID
  */
-export async function getNote(noteId: string): Promise<Note | null> {
+export async function getNote(userId: string, noteId: string): Promise<Note | null> {
     if (!db) {
         throw new Error('Firestore is not initialized');
     }
 
     try {
-        const noteDoc = await getDoc(doc(db, 'notes', noteId));
+        const noteDoc = await getDoc(doc(db, 'users', userId, 'notes', noteId));
         if (noteDoc.exists()) {
             return {
                 id: noteDoc.id,
@@ -164,6 +183,7 @@ export async function getNote(noteId: string): Promise<Note | null> {
  * Update a note
  */
 export async function updateNote(
+    userId: string,
     noteId: string,
     updates: UpdateNoteData
 ): Promise<void> {
@@ -172,7 +192,7 @@ export async function updateNote(
     }
 
     try {
-        const noteRef = doc(db, 'notes', noteId);
+        const noteRef = doc(db, 'users', userId, 'notes', noteId);
         await updateDoc(noteRef, {
             ...updates,
             lastEdited: serverTimestamp(),
@@ -187,13 +207,13 @@ export async function updateNote(
 /**
  * Delete a note
  */
-export async function deleteNote(noteId: string): Promise<void> {
+export async function deleteNote(userId: string, noteId: string): Promise<void> {
     if (!db) {
         throw new Error('Firestore is not initialized');
     }
 
     try {
-        await deleteDoc(doc(db, 'notes', noteId));
+        await deleteDoc(doc(db, 'users', userId, 'notes', noteId));
     } catch (error) {
         console.error('Error deleting note:', error);
         throw error;
@@ -203,25 +223,26 @@ export async function deleteNote(noteId: string): Promise<void> {
 /**
  * Toggle star status of a note
  */
-export async function toggleStarNote(noteId: string, isStarred: boolean): Promise<void> {
-    await updateNote(noteId, { isStarred });
+export async function toggleStarNote(userId: string, noteId: string, isStarred: boolean): Promise<void> {
+    await updateNote(userId, noteId, { isStarred });
 }
 
 /**
  * Toggle archive status of a note
  */
-export async function toggleArchiveNote(noteId: string, isArchived: boolean): Promise<void> {
-    await updateNote(noteId, { isArchived });
+export async function toggleArchiveNote(userId: string, noteId: string, isArchived: boolean): Promise<void> {
+    await updateNote(userId, noteId, { isArchived });
 }
 
 /**
  * Move note to a different collection
  */
 export async function moveNoteToCollection(
+    userId: string,
     noteId: string,
     collectionId: string | null
 ): Promise<void> {
-    await updateNote(noteId, { collectionId });
+    await updateNote(userId, noteId, { collectionId });
 }
 
 /**
@@ -237,8 +258,7 @@ export async function getNotesByCollection(
 
     try {
         const notesQuery = query(
-            collection(db, 'notes'),
-            where('userId', '==', userId),
+            collection(db, 'users', userId, 'notes'),
             where('collectionId', '==', collectionId)
             // Removed orderBy to avoid index requirement
         );
@@ -271,8 +291,7 @@ export async function getStarredNotes(userId: string): Promise<Note[]> {
 
     try {
         const notesQuery = query(
-            collection(db, 'notes'),
-            where('userId', '==', userId),
+            collection(db, 'users', userId, 'notes'),
             where('isStarred', '==', true)
             // Removed orderBy to avoid index requirement
         );
@@ -305,8 +324,7 @@ export async function getArchivedNotes(userId: string): Promise<Note[]> {
 
     try {
         const notesQuery = query(
-            collection(db, 'notes'),
-            where('userId', '==', userId),
+            collection(db, 'users', userId, 'notes'),
             where('isArchived', '==', true)
             // Removed orderBy to avoid index requirement
         );

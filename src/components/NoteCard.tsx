@@ -59,14 +59,25 @@ export default function NoteCard({
             </h3>
 
             {/* Content Preview */}
-            {content && (
-                <div
-                    className="text-xs text-black/60 mb-3 line-clamp-3 leading-relaxed"
-                    dangerouslySetInnerHTML={{
-                        __html: content.replace(/<[^>]*>/g, ' ').substring(0, 150)
-                    }}
-                />
-            )}
+            {content && (() => {
+                try {
+                    // Safer text extraction for mobile
+                    const textContent = content
+                        .replace(/<[^>]*>/g, ' ')  // Remove HTML tags
+                        .replace(/\s+/g, ' ')       // Normalize whitespace
+                        .trim()
+                        .substring(0, 150);
+
+                    return textContent ? (
+                        <div className="text-xs text-black/60 mb-3 line-clamp-3 leading-relaxed">
+                            {textContent}
+                        </div>
+                    ) : null;
+                } catch (error) {
+                    console.error('Preview error:', error);
+                    return null;
+                }
+            })()}
 
             {/* Footer */}
             <div className="flex items-center justify-between mt-auto">
@@ -94,7 +105,7 @@ export default function NoteCard({
 
                 {/* Dropdown Menu */}
                 {showMenu && (
-                    <div className="absolute right-0 mt-2 w-44 bg-white rounded-xl shadow-lg border border-[#e0e0e0] py-1 z-10 animate-slide-down max-h-[240px] overflow-y-auto">
+                    <div className="absolute right-0 top-full mt-2 w-44 bg-white rounded-xl shadow-lg border border-[#e0e0e0] py-1 z-50 animate-slide-down max-h-[240px] overflow-y-auto">
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();

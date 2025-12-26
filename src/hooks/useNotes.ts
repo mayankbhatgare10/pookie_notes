@@ -15,6 +15,22 @@ import {
 } from '@/lib/notesService';
 import { Timestamp } from 'firebase/firestore';
 
+export interface NoteConnection {
+    noteId: string;
+    connectionType: 'completion-sync' | 'reference' | 'bidirectional';
+    syncConfig?: {
+        autoSync: boolean;
+        syncCompletedItems: boolean;
+    };
+    createdAt: string;
+}
+
+export interface NoteMetadata {
+    createdAt: string;
+    lastModified: string;
+    totalConnections: number;
+}
+
 export interface Note {
     id: string;
     title: string;
@@ -27,6 +43,8 @@ export interface Note {
     isPrivate: boolean;
     passwordHash?: string;
     createdAt: string;
+    connectedNotes?: NoteConnection[];
+    metadata?: NoteMetadata;
 }
 
 // Helper function to format timestamp
@@ -133,7 +151,8 @@ export const useNotes = () => {
 
     const handleSaveNote = async (noteId: string, title: string, updatedContent: string) => {
         try {
-            await updateNoteService(noteId, {
+            if (!user) return;
+            await updateNoteService(user.uid, noteId, {
                 title,
                 content: updatedContent
             });
@@ -155,7 +174,8 @@ export const useNotes = () => {
         const note = notes.find(n => n.id === noteId);
 
         try {
-            await deleteNoteService(noteId);
+            if (!user) return;
+            await deleteNoteService(user.uid, noteId);
             setNotes(notes.filter(note => note.id !== noteId));
             showToast(`"${note?.title || 'Note'}" deleted! Gone, but not forgotten... actually, yeah, forgotten. 🗑️`, 'success');
         } catch (error) {
@@ -169,7 +189,8 @@ export const useNotes = () => {
         const willBeStarred = !note?.isStarred;
 
         try {
-            await toggleStarNote(noteId, willBeStarred);
+            if (!user) return;
+            await toggleStarNote(user.uid, noteId, willBeStarred);
 
             setNotes(notes.map(note =>
                 note.id === noteId
@@ -193,7 +214,8 @@ export const useNotes = () => {
         const willBeArchived = !note?.isArchived;
 
         try {
-            await toggleArchiveNote(noteId, willBeArchived);
+            if (!user) return;
+            await toggleArchiveNote(user.uid, noteId, willBeArchived);
 
             setNotes(notes.map(note =>
                 note.id === noteId
@@ -214,7 +236,8 @@ export const useNotes = () => {
 
     const handleMoveToCollection = async (noteId: string, newCollectionId: string | null) => {
         try {
-            await moveNoteToCollection(noteId, newCollectionId);
+            if (!user) return;
+            await moveNoteToCollection(user.uid, noteId, newCollectionId);
 
             setNotes(notes.map(note =>
                 note.id === noteId

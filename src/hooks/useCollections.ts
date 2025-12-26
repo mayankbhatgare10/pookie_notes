@@ -13,6 +13,10 @@ import {
     CreateCollectionData,
     UpdateCollectionData,
 } from '@/lib/collectionsService';
+import {
+    deleteCollectionWithNotes,
+    getCollectionNoteCount,
+} from '@/lib/collectionNotesHelper';
 
 export interface Collection {
     id: string;
@@ -157,12 +161,39 @@ export const useCollections = () => {
         }
     };
 
+    const handleDeleteCollectionWithNotes = async (
+        collectionId: string,
+        action: 'delete' | 'move',
+        targetCollectionId?: string
+    ) => {
+        if (!user) return;
+
+        const collection = collections.find(c => c.id === collectionId);
+
+        try {
+            await deleteCollectionWithNotes(user.uid, collectionId, action, targetCollectionId);
+            setCollections(collections.filter(c => c.id !== collectionId));
+
+            if (action === 'move') {
+                showToast(`\"${collection?.name || 'Collection'}\" deleted and notes moved! Smooth operator. 😎`, 'success');
+            } else {
+                showToast(`\"${collection?.name || 'Collection'}\" and all its notes deleted! Scorched earth! 🔥`, 'success');
+            }
+        } catch (error) {
+            console.error('Error deleting collection:', error);
+            showToast('Failed to delete collection. The universe said no. 😢', 'error');
+        }
+    };
+
     return {
         collections,
         loading,
         handleCreateCollection,
         handleUpdateCollection,
         handleDeleteCollection,
+        handleDeleteCollectionWithNotes,
+        getCollectionNoteCount: (collectionId: string) =>
+            user ? getCollectionNoteCount(user.uid, collectionId) : Promise.resolve(0),
         handleAddTag,
         handleRemoveTag,
         refreshCollections: loadCollections,
