@@ -84,11 +84,11 @@ export default function NewNoteModal({
 
     return (
         <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
-            <div className="bg-white rounded-[24px] w-full max-w-[480px] shadow-2xl relative animate-scale-in">
+            <div className="bg-white rounded-2xl md:rounded-[24px] w-[90%] max-w-[480px] shadow-2xl relative animate-scale-in">
                 {/* Close Button */}
                 <button
                     onClick={onClose}
-                    className="absolute top-5 right-5 text-black hover:text-gray-600 transition-colors z-10"
+                    className="absolute top-4 md:top-5 right-4 md:right-5 text-black hover:text-gray-600 transition-colors z-10"
                 >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -96,17 +96,17 @@ export default function NewNoteModal({
                 </button>
 
                 {/* Content */}
-                <div className="p-8">
+                <div className="p-6 md:p-8">
                     {/* Title */}
-                    <div className="mb-6">
-                        <h2 className="text-xl font-bold text-black mb-0.5">
+                    <div className="mb-5 md:mb-6">
+                        <h2 className="text-lg md:text-xl font-bold text-black mb-0.5">
                             {editMode ? 'Edit Note' : 'Create New Note'}
                         </h2>
                         <p className="text-xs text-[#666]">Set up your note details.</p>
                     </div>
 
                     {/* Note Title */}
-                    <div className="mb-5">
+                    <div className="mb-4 md:mb-5">
                         <label className="block text-[9px] font-bold text-[#666] uppercase tracking-wider mb-2">
                             Note Title
                         </label>
@@ -122,7 +122,7 @@ export default function NewNoteModal({
 
                     {/* Collection Selection - Hidden if creating from collection */}
                     {!selectedCollectionId && (
-                        <div className="mb-5">
+                        <div className="mb-4 md:mb-5">
                             <label className="block text-[9px] font-bold text-[#666] uppercase tracking-wider mb-2">
                                 Collection (Optional)
                             </label>
@@ -142,8 +142,8 @@ export default function NewNoteModal({
                     )}
 
                     {/* Privacy Toggle */}
-                    <div className="mb-5">
-                        <div className="flex items-center justify-between p-4 rounded-lg bg-[#f8f7f0] border border-[#e0e0e0]">
+                    <div className="mb-4 md:mb-5">
+                        <div className="flex items-center justify-between p-3 md:p-4 rounded-lg bg-[#f8f7f0] border border-[#e0e0e0]">
                             <div>
                                 <h3 className="text-sm font-semibold text-black">Lock It Up</h3>
                                 <p className="text-xs text-[#666]">Keep your secrets safe.</p>
@@ -163,7 +163,7 @@ export default function NewNoteModal({
 
                     {/* Password Fields - Show when private */}
                     {isPrivate && (
-                        <div className="mb-5 space-y-3">
+                        <div className="mb-4 md:mb-5 space-y-3">
                             <div className="relative">
                                 <input
                                     type={showPassword ? 'text' : 'password'}
@@ -220,7 +220,7 @@ export default function NewNoteModal({
                     {/* Create Button */}
                     <button
                         onClick={handleCreate}
-                        className="w-full py-3 rounded-full bg-[#ffd700] hover:bg-[#ffed4e] text-black font-bold text-sm transition-all mb-3"
+                        className="w-full py-2.5 md:py-3 rounded-full bg-[#ffd700] hover:bg-[#ffed4e] text-black font-bold text-sm transition-all mb-3"
                     >
                         {editMode ? 'Save Changes' : 'Create Note'}
                     </button>

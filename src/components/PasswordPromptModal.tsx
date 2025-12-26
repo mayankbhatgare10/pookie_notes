@@ -36,11 +36,11 @@ export default function PasswordPromptModal({ isOpen, onClose, onSuccess, itemNa
 
     return (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[60] p-4 animate-fade-in">
-            <div className="bg-white rounded-[24px] w-full max-w-md shadow-2xl relative animate-scale-in">
+            <div className="bg-white rounded-2xl md:rounded-[24px] w-[90%] max-w-md shadow-2xl relative animate-scale-in">
                 {/* Close Button */}
                 <button
                     onClick={handleClose}
-                    className="absolute top-5 right-5 text-black hover:text-gray-600 transition-colors z-10"
+                    className="absolute top-4 md:top-5 right-4 md:right-5 text-black hover:text-gray-600 transition-colors z-10"
                 >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -48,24 +48,24 @@ export default function PasswordPromptModal({ isOpen, onClose, onSuccess, itemNa
                 </button>
 
                 {/* Content */}
-                <div className="p-8">
+                <div className="p-6 md:p-8">
                     {/* Icon */}
-                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#fff4e6] flex items-center justify-center">
-                        <svg className="w-8 h-8 text-[#ff6b00]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="w-14 h-14 md:w-16 md:h-16 mx-auto mb-3 md:mb-4 rounded-full bg-[#fff4e6] flex items-center justify-center">
+                        <svg className="w-7 h-7 md:w-8 md:h-8 text-[#ff6b00]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                         </svg>
                     </div>
 
                     {/* Title */}
-                    <h2 className="text-2xl font-bold text-black text-center mb-2">
+                    <h2 className="text-xl md:text-2xl font-bold text-black text-center mb-1 md:mb-2">
                         Locked {itemName}! 🔒
                     </h2>
-                    <p className="text-sm text-[#666] text-center mb-6">
+                    <p className="text-xs md:text-sm text-[#666] text-center mb-5 md:mb-6">
                         This {itemName} is password protected. Enter the password to access it.
                     </p>
 
                     {/* Password Input */}
-                    <div className="mb-5">
+                    <div className="mb-4 md:mb-5">
                         <label className="block text-[9px] font-bold text-[#666] uppercase tracking-wider mb-2">
                             Password
                         </label>
@@ -105,23 +105,23 @@ export default function PasswordPromptModal({ isOpen, onClose, onSuccess, itemNa
                     </div>
 
                     {/* Buttons */}
-                    <div className="flex gap-3">
+                    <div className="flex flex-col sm:flex-row gap-2 md:gap-3">
                         <button
                             onClick={handleClose}
-                            className="flex-1 py-3 rounded-full bg-white border-2 border-black text-black font-bold text-sm hover:bg-[#f5f4e8] transition-colors"
+                            className="flex-1 py-2.5 md:py-3 rounded-full bg-white border-2 border-black text-black font-bold text-sm hover:bg-[#f5f4e8] transition-colors order-2 sm:order-1"
                         >
                             Cancel
                         </button>
                         <button
                             onClick={handleSubmit}
-                            className="flex-1 py-3 rounded-full bg-[#ffd700] hover:bg-[#ffed4e] text-black font-bold text-sm transition-colors"
+                            className="flex-1 py-2.5 md:py-3 rounded-full bg-[#ffd700] hover:bg-[#ffed4e] text-black font-bold text-sm transition-colors order-1 sm:order-2"
                         >
                             Unlock
                         </button>
                     </div>
 
                     {/* Footer */}
-                    <p className="text-xs text-[#999] text-center mt-4">
+                    <p className="text-[10px] md:text-xs text-[#999] text-center mt-3 md:mt-4">
                         Forgot password? Too bad! 😅
                     </p>
                 </div>

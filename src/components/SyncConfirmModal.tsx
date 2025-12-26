@@ -36,62 +36,52 @@ export default function SyncConfirmModal({
                 onClick={onClose}
             />
 
-            {/* Modal */}
-            <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-2xl shadow-2xl z-[100] p-6 animate-scale-in border-2 border-[#ffd700]">
+            {/* Modal - Responsive */}
+            <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md bg-white rounded-2xl md:rounded-3xl shadow-2xl z-[100] p-5 md:p-6 animate-scale-in border-2 border-[#ffd700]">
                 {/* Header */}
-                <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                        <h2 className="text-xl font-bold text-black mb-2">
-                            {getSarcasticMessage()}
-                        </h2>
-                        <div className="bg-[#fffef5] border-l-4 border-[#ffd700] p-3 rounded">
-                            <p className="text-sm text-black/80 font-medium">
-                                ✓ {itemText}
-                            </p>
-                        </div>
-                    </div>
+                <div className="flex items-start justify-between mb-4 md:mb-5">
+                    <h2 className="text-base md:text-lg font-bold text-black pr-2">
+                        {getSarcasticMessage()}
+                    </h2>
                     <button
                         onClick={onClose}
-                        className="w-8 h-8 rounded-full hover:bg-[#f5f4e8] flex items-center justify-center transition-colors flex-shrink-0 ml-2"
+                        className="w-7 h-7 md:w-8 md:h-8 rounded-full hover:bg-[#f5f4e8] flex items-center justify-center transition-colors flex-shrink-0"
                     >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
 
-                {/* Info */}
-                <div className="mb-6">
-                    <p className="text-sm text-[#666] mb-3">
-                        This will add the completed item to <strong>"{targetNoteName}"</strong> with a timestamp.
-                    </p>
-                    <p className="text-xs text-[#999] italic">
-                        Because apparently one checklist wasn't enough for you. 📝
+                {/* Item Preview */}
+                <div className="bg-[#fffef5] border-l-4 border-[#ffd700] p-3 md:p-4 rounded-lg mb-5 md:mb-6">
+                    <p className="text-xs md:text-sm text-black/80 font-medium break-words">
+                        ✓ {itemText}
                     </p>
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-2 md:gap-3">
                     <button
                         onClick={onClose}
-                        className="flex-1 px-4 py-3 border-2 border-[#e0e0e0] rounded-xl font-semibold text-black hover:bg-[#f5f4e8] transition-colors"
+                        className="flex-1 px-4 py-2.5 md:py-3 border-2 border-[#e0e0e0] rounded-xl font-semibold text-sm text-black hover:bg-[#f5f4e8] transition-colors order-2 sm:order-1"
                     >
-                        Nah, Keep It Here
+                        Nah
                     </button>
                     <button
                         onClick={() => {
                             onConfirm();
                             onClose();
                         }}
-                        className="flex-1 px-4 py-3 bg-[#ffd700] hover:bg-[#ffed4e] rounded-xl font-bold text-black transition-colors border-2 border-black"
+                        className="flex-1 px-4 py-2.5 md:py-3 bg-[#ffd700] hover:bg-[#ffed4e] rounded-xl font-bold text-sm text-black transition-colors border-2 border-black order-1 sm:order-2"
                     >
-                        Yes, Sync It! ✨
+                        Sync It! ✨
                     </button>
                 </div>
 
                 {/* Footer */}
-                <p className="text-center text-xs text-[#999] mt-4 italic">
-                    Don't worry, I'll remember this decision... for now. 😏
+                <p className="text-center text-[10px] md:text-xs text-[#999] mt-3 md:mt-4 italic">
+                    I'll remember this... maybe. 😏
                 </p>
             </div>
         </>

@@ -380,36 +380,36 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                         className="fixed inset-0 bg-black/50 z-[60] transition-opacity"
                         onClick={() => setShowDeleteConfirm(false)}
                     />
-                    <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[70] w-[400px]">
-                        <div className="bg-white rounded-[20px] border-2 border-black p-6 shadow-2xl">
+                    <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[70] w-[90%] max-w-[400px]">
+                        <div className="bg-white rounded-2xl md:rounded-[20px] border-2 border-black p-5 md:p-6 shadow-2xl">
                             {/* Warning Icon */}
-                            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
-                                <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="w-14 h-14 md:w-16 md:h-16 mx-auto mb-3 md:mb-4 rounded-full bg-red-100 flex items-center justify-center">
+                                <svg className="w-7 h-7 md:w-8 md:h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                 </svg>
                             </div>
 
                             {/* Title */}
-                            <h3 className="text-xl font-bold text-black text-center mb-2">
+                            <h3 className="text-lg md:text-xl font-bold text-black text-center mb-2">
                                 Delete Account?
                             </h3>
 
                             {/* Message */}
-                            <p className="text-sm text-[#666] text-center mb-6">
+                            <p className="text-xs md:text-sm text-[#666] text-center mb-5 md:mb-6">
                                 This will permanently delete your account and all your pookies. This action cannot be undone!
                             </p>
 
                             {/* Buttons */}
-                            <div className="flex gap-3">
+                            <div className="flex flex-col sm:flex-row gap-2 md:gap-3">
                                 <button
                                     onClick={() => setShowDeleteConfirm(false)}
-                                    className="flex-1 py-3 rounded-full bg-white border-2 border-black text-black font-bold text-sm hover:bg-[#f5f4e8] transition-colors"
+                                    className="flex-1 py-2.5 md:py-3 rounded-full bg-white border-2 border-black text-black font-bold text-sm hover:bg-[#f5f4e8] transition-colors order-2 sm:order-1"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={handleDeleteAccount}
-                                    className="flex-1 py-3 rounded-full bg-red-500 hover:bg-red-600 border-2 border-black text-white font-bold text-sm transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px]"
+                                    className="flex-1 py-2.5 md:py-3 rounded-full bg-red-500 hover:bg-red-600 border-2 border-black text-white font-bold text-sm transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] order-1 sm:order-2"
                                 >
                                     Delete
                                 </button>
@@ -427,37 +427,37 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                         onClick={() => setShowReLoginPrompt(false)}
                     />
                     <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[70] w-[90%] max-w-[420px]">
-                        <div className="bg-white rounded-[20px] border-2 border-black p-6 shadow-2xl">
+                        <div className="bg-white rounded-2xl md:rounded-[20px] border-2 border-black p-5 md:p-6 shadow-2xl">
                             {/* Icon */}
-                            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#fff4e6] flex items-center justify-center">
-                                <svg className="w-8 h-8 text-[#ffd700]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="w-14 h-14 md:w-16 md:h-16 mx-auto mb-3 md:mb-4 rounded-full bg-[#fff4e6] flex items-center justify-center">
+                                <svg className="w-7 h-7 md:w-8 md:h-8 text-[#ffd700]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                             </div>
 
                             {/* Title */}
-                            <h3 className="text-xl font-bold text-black text-center mb-2">
+                            <h3 className="text-lg md:text-xl font-bold text-black text-center mb-2">
                                 Profile Updated! 🎉
                             </h3>
 
                             {/* Sarcastic Message */}
-                            <p className="text-sm text-[#666] text-center mb-6">
+                            <p className="text-xs md:text-sm text-[#666] text-center mb-5 md:mb-6">
                                 Your changes are saved! But here's the thing... to see them <span className="font-bold">everywhere</span> (yes, including that stubborn dropdown), you'll need to log out and back in.
                                 <br /><br />
                                 I know, I know... it's 2025 and we still need to do this. Technology is amazing! 🙄
                             </p>
 
                             {/* Buttons */}
-                            <div className="flex gap-3">
+                            <div className="flex flex-col sm:flex-row gap-2 md:gap-3">
                                 <button
                                     onClick={() => setShowReLoginPrompt(false)}
-                                    className="flex-1 py-3 rounded-full bg-white border-2 border-black text-black font-bold text-sm hover:bg-[#f5f4e8] transition-colors"
+                                    className="flex-1 py-2.5 md:py-3 rounded-full bg-white border-2 border-black text-black font-bold text-sm hover:bg-[#f5f4e8] transition-colors order-2 sm:order-1"
                                 >
                                     Later, I Guess
                                 </button>
                                 <button
                                     onClick={handleReLogin}
-                                    className="flex-1 py-3 rounded-full bg-[#ffd700] hover:bg-[#ffed4e] border-2 border-black text-black font-bold text-sm transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px]"
+                                    className="flex-1 py-2.5 md:py-3 rounded-full bg-[#ffd700] hover:bg-[#ffed4e] border-2 border-black text-black font-bold text-sm transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] order-1 sm:order-2"
                                 >
                                     Fine, Log Me Out
                                 </button>
