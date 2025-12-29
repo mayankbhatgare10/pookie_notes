@@ -166,20 +166,72 @@ export default function ExportMenu({ editor, title, wordCount, isOpen, onClose, 
 
     return createPortal(
         <>
-            <div className="fixed inset-0 z-[999998]" onClick={onClose} />
+            {/* Backdrop */}
             <div
-                className="fixed bg-white rounded-xl shadow-xl border border-black/10 py-2 z-[999999] min-w-[160px]"
-                style={{ top: `${position.top}px`, left: `${position.left}px` }}
+                className="fixed inset-0 z-[999998] bg-black/50 md:bg-transparent animate-modal-backdrop md:animate-none"
+                onClick={onClose}
+            />
+
+            {/* Menu - Bottom sheet on mobile, dropdown on desktop */}
+            <div
+                className="fixed md:absolute bg-white rounded-t-2xl md:rounded-xl shadow-2xl md:shadow-xl border-t-2 md:border border-black/10 z-[999999] 
+                           bottom-0 md:bottom-auto left-0 md:left-auto right-0 md:right-auto w-full md:w-auto md:min-w-[200px]
+                           animate-slide-up md:animate-none"
+                style={{
+                    top: typeof window !== 'undefined' && window.innerWidth >= 768 ? `${position.top}px` : undefined,
+                    left: typeof window !== 'undefined' && window.innerWidth >= 768 ? `${position.left}px` : undefined
+                }}
             >
-                <button onClick={exportToPDF} className="w-full px-4 py-2.5 text-left text-sm hover:bg-black/5 transition-colors flex items-center gap-3">
-                    <span className="font-medium">Export as PDF</span>
-                </button>
-                <button onClick={exportToWord} className="w-full px-4 py-2.5 text-left text-sm hover:bg-black/5 transition-colors flex items-center gap-3">
-                    <span className="font-medium">Export as Word</span>
-                </button>
-                <button onClick={exportToCSV} className="w-full px-4 py-2.5 text-left text-sm hover:bg-black/5 transition-colors flex items-center gap-3">
-                    <span className="font-medium">Export as CSV</span>
-                </button>
+                {/* Mobile Handle */}
+                <div className="md:hidden flex justify-center py-2">
+                    <div className="w-12 h-1 bg-black/20 rounded-full" />
+                </div>
+
+                {/* Title - Mobile only */}
+                <div className="md:hidden px-4 pb-2">
+                    <h3 className="font-bold text-lg">Export Note</h3>
+                </div>
+
+                {/* Export Options */}
+                <div className="py-2">
+                    <button
+                        onClick={exportToPDF}
+                        className="w-full px-4 md:px-4 py-3 md:py-2.5 text-left text-base md:text-sm hover:bg-black/5 transition-colors flex items-center gap-3 tap-target"
+                    >
+                        <svg className="w-5 h-5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
+                        <span className="font-medium">Export as PDF</span>
+                    </button>
+                    <button
+                        onClick={exportToWord}
+                        className="w-full px-4 md:px-4 py-3 md:py-2.5 text-left text-base md:text-sm hover:bg-black/5 transition-colors flex items-center gap-3 tap-target"
+                    >
+                        <svg className="w-5 h-5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span className="font-medium">Export as Word</span>
+                    </button>
+                    <button
+                        onClick={exportToCSV}
+                        className="w-full px-4 md:px-4 py-3 md:py-2.5 text-left text-base md:text-sm hover:bg-black/5 transition-colors flex items-center gap-3 tap-target"
+                    >
+                        <svg className="w-5 h-5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span className="font-medium">Export as CSV</span>
+                    </button>
+                </div>
+
+                {/* Cancel button - Mobile only */}
+                <div className="md:hidden border-t border-black/10 p-4">
+                    <button
+                        onClick={onClose}
+                        className="w-full py-3 bg-black/5 hover:bg-black/10 rounded-xl font-semibold transition-colors tap-target"
+                    >
+                        Cancel
+                    </button>
+                </div>
             </div>
         </>,
         document.body

@@ -4,6 +4,7 @@
 import { Editor } from '@tiptap/react';
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import ColorPalettePicker from './ColorPalettePicker';
 
 interface EditorToolbarProps {
     editor: Editor | null;
@@ -229,8 +230,8 @@ export default function EditorToolbar({
                 <button
                     onClick={onToggleInkMode}
                     className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all tap-target ${isInkMode
-                            ? 'bg-[#ffd700] shadow-lg scale-105'
-                            : 'bg-[#ffd700]/20 hover:bg-[#ffd700]/40'
+                        ? 'bg-[#ffd700] shadow-lg scale-105'
+                        : 'bg-[#ffd700]/20 hover:bg-[#ffd700]/40'
                         }`}
                     title="Handwriting Mode (I)"
                 >
@@ -303,29 +304,12 @@ export default function EditorToolbar({
                                             )}
                                         </button>
                                     ))}
-                                    {/* Custom Color Picker */}
-                                    <div className="relative">
-                                        <input
-                                            type="color"
-                                            value={inkColor}
-                                            onChange={(e) => onInkColorChange(e.target.value)}
-                                            className="w-6 h-6 rounded-full cursor-pointer opacity-0 absolute inset-0"
-                                            title="Custom color"
-                                        />
-                                        <div
-                                            className={`w-6 h-6 rounded-full border-2 border-dashed border-black/30 flex items-center justify-center hover:scale-110 transition-all cursor-pointer shadow-sm ${!presetInkColors.includes(inkColor) ? 'ring-2 ring-[#ffd700] ring-offset-2 scale-110' : ''
-                                                }`}
-                                            style={{
-                                                backgroundColor: !presetInkColors.includes(inkColor) ? inkColor : 'transparent'
-                                            }}
-                                        >
-                                            {presetInkColors.includes(inkColor) && (
-                                                <svg className="w-3 h-3 text-black/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                                                </svg>
-                                            )}
-                                        </div>
-                                    </div>
+                                    {/* Custom Color Palette Picker */}
+                                    <ColorPalettePicker
+                                        currentColor={inkColor}
+                                        onColorChange={onInkColorChange}
+                                        presetColors={presetInkColors}
+                                    />
                                 </div>
                             </>
                         )}
