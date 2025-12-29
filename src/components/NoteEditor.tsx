@@ -24,11 +24,16 @@ import FooterConnectionsPopup from './editor/FooterConnectionsPopup';
 import LinkNoteModal from './LinkNoteModal';
 import NoteInfoPanel from './NoteInfoPanel';
 import SyncConfirmModal from './SyncConfirmModal';
+import InkCanvas from './editor/InkCanvas';
+import EditConfirmModal from './EditConfirmModal';
 
 import { Note } from '@/hooks/useNotes';
 import { useNoteLinking } from '@/hooks/useNoteLinking';
 import { useToast } from '@/contexts/ToastContext';
 import { shareNoteContent } from '@/utils/noteFormatting';
+import { saveInkStrokes, loadInkStrokes } from '@/lib/handwritingService';
+import { debounce } from '@/utils/debounce';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface NoteEditorProps {
     isOpen: boolean;
@@ -62,12 +67,24 @@ export default function NoteEditor({
     const [commandSearch, setCommandSearch] = useState('');
     const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
     const [exportButtonRef, setExportButtonRef] = useState<HTMLButtonElement | null>(null);
-    const [isDrawing, setIsDrawing] = useState(false);
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const [isCanvasDrawing, setIsCanvasDrawing] = useState(false);
     const [showSyncConfirm, setShowSyncConfirm] = useState(false);
+    const [showEditConfirm, setShowEditConfirm] = useState(false);
+    const [showSaveConfirm, setShowSaveConfirm] = useState(false);
     const [syncPendingItem, setSyncPendingItem] = useState('');
     const [syncPendingContent, setSyncPendingContent] = useState('');
+
+    // Ink overlay state
+    const [isInkMode, setIsInkMode] = useState(false);
+    const [inkTool, setInkTool] = useState<'pen' | 'pencil' | 'brush' | 'highlighter' | 'eraser'>('pen');
+    const [inkColor, setInkColor] = useState('#000000');
+    const [inkStrokeSize, setInkStrokeSize] = useState(2);
+    const [inkStrokes, setInkStrokes] = useState<any[]>([]);
+    const [canInkRedo, setCanInkRedo] = useState(false);
+    const inkCanvasRef = useRef<any>(null);
+
+    const { user } = useAuth();
+    const { showToast } = useToast();
+    const availableTags = collectionTags || [];
 
     // Track synced items in localStorage to persist across sessions
     const getSyncedItems = () => {
@@ -94,8 +111,7 @@ export default function NoteEditor({
         (window as any).clearSyncedItems = clearSyncedItems;
     }
 
-    const { showToast } = useToast();
-    const availableTags = collectionTags || [];
+
 
     // Note linking hook
     const {
@@ -199,8 +215,25 @@ export default function NoteEditor({
             };
 
             loadLatestContent();
+
+            // Load ink strokes
+            const loadInk = async () => {
+                if (!note.id || !user) return;
+                try {
+                    const strokes = await loadInkStrokes(user.uid, note.id);
+                    console.log('📝 Loaded ink strokes:', strokes.length);
+                    setInkStrokes(strokes);
+                    // Update the canvas with loaded strokes
+                    if (inkCanvasRef.current && strokes.length > 0) {
+                        inkCanvasRef.current.setStrokes(strokes);
+                    }
+                } catch (error) {
+                    console.error('Failed to load ink strokes:', error);
+                }
+            };
+            loadInk();
         }
-    }, [isOpen, editor, note?.id]);
+    }, [isOpen, editor, note?.id, user]);
 
     // Listen for content updates from sync
     useEffect(() => {
@@ -250,8 +283,66 @@ export default function NoteEditor({
     }, [note?.id, editor, showToast]);
 
     useEffect(() => {
-        editor?.setEditable(isEditing);
-    }, [isEditing, editor]);
+        editor?.setEditable(isEditing && !isInkMode);
+
+        // Disable ink mode when exiting edit mode
+        if (!isEditing && isInkMode) {
+            setIsInkMode(false);
+        }
+    }, [isEditing, isInkMode, editor]);
+
+    // Ink save handler (debounced)
+    const saveInkDebounced = useRef(
+        debounce(async (strokes: any[], noteId: string, userId: string) => {
+            try {
+                await saveInkStrokes(userId, noteId, strokes);
+                console.log('✅ Ink strokes auto-saved');
+            } catch (error) {
+                console.error('Failed to save ink strokes:', error);
+            }
+        }, 500)
+    ).current;
+
+    const handleInkStrokesChange = (strokes: any[]) => {
+        setInkStrokes(strokes);
+        if (note?.id && user) {
+            saveInkDebounced(strokes, note.id, user.uid);
+        }
+    };
+
+    // Keyboard shortcuts for ink mode
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Toggle ink mode with 'I' key
+            if ((e.key === 'i' || e.key === 'I') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                e.preventDefault();
+                setIsInkMode(prev => !prev);
+                return;
+            }
+
+            // Ink mode shortcuts
+            if (isInkMode) {
+                if (e.key === 'p' || e.key === 'P') {
+                    e.preventDefault();
+                    setInkTool('pen');
+                } else if (e.key === 'e' || e.key === 'E') {
+                    e.preventDefault();
+                    setInkTool('eraser');
+                } else if (e.ctrlKey || e.metaKey) {
+                    if (e.key === 'z' && !e.shiftKey) {
+                        e.preventDefault();
+                        inkCanvasRef.current?.undo();
+                    } else if (e.key === 'y' || (e.key === 'z' && e.shiftKey)) {
+                        e.preventDefault();
+                        inkCanvasRef.current?.redo();
+                    }
+                }
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isInkMode]);
 
     // Sync on checkbox change with confirmation
     useEffect(() => {
@@ -409,187 +500,183 @@ export default function NoteEditor({
         }
     };
 
-    // Drawing functions
-    const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-        setIsCanvasDrawing(true);
-        const rect = canvas.getBoundingClientRect();
-        ctx.beginPath();
-        ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
-    };
 
-    const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
-        if (!isCanvasDrawing) return;
-        const canvas = canvasRef.current;
-        const ctx = canvas?.getContext('2d');
-        if (!canvas || !ctx) return;
-        const rect = canvas.getBoundingClientRect();
-        ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
-        ctx.stroke();
-    };
-
-    const insertDrawing = () => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const dataUrl = canvas.toDataURL('image/png');
-        editor?.chain().focus().setImage({ src: dataUrl }).run();
-        canvas.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height);
-        setIsDrawing(false);
-    };
 
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-2 md:p-4 animate-in fade-in duration-200">
-            <div className="bg-gradient-to-br from-[#fffef5] to-[#f5f4e8] rounded-[20px] md:rounded-[32px] w-full max-w-5xl max-h-[95vh] md:max-h-[92vh] shadow-2xl flex flex-col border-2 border-black/5 animate-in zoom-in-95 duration-300 relative">
+        <>
+            {/* Edit Confirmation Modal */}
+            <EditConfirmModal
+                isOpen={showEditConfirm}
+                type="edit"
+                onConfirm={() => {
+                    setShowEditConfirm(false);
+                    setIsEditing(true);
+                }}
+                onCancel={() => setShowEditConfirm(false)}
+            />
 
-                {/* Header */}
-                <EditorHeader
-                    title={title}
-                    onTitleChange={setTitle}
-                    isEditing={isEditing}
-                    onSave={handleSaveWithSync}
-                    onEdit={() => setIsEditing(true)}
-                    note={note}
-                    onShowInfo={() => setShowInfoPanel(true)}
-                    onShare={handleShare}
-                    onLinkNote={() => setShowLinkModal(true)}
-                    onDelete={() => note && onDelete?.(note.id)}
-                    onClose={onClose}
-                    editor={editor}
-                    wordCount={wordCount}
-                    showExportMenu={showExportMenu}
-                    setShowExportMenu={setShowExportMenu}
-                    exportButtonRef={exportButtonRef}
-                    setExportButtonRef={setExportButtonRef}
-                />
+            {/* Save Confirmation Modal */}
+            <EditConfirmModal
+                isOpen={showSaveConfirm}
+                type="save"
+                onConfirm={() => {
+                    setShowSaveConfirm(false);
+                    handleSaveWithSync();
+                }}
+                onCancel={() => setShowSaveConfirm(false)}
+            />
 
-                {/* Toolbar */}
-                {isEditing && (
-                    <EditorToolbar
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-2 md:p-4 animate-modal-backdrop no-overscroll">
+                <div className="bg-gradient-to-br from-[#fffef5] to-[#f5f4e8] rounded-[20px] md:rounded-[32px] w-full max-w-5xl max-h-[95vh] md:max-h-[92vh] shadow-2xl flex flex-col border-2 border-black/5 animate-modal-enter gpu-accelerated relative">
+
+                    {/* Header */}
+                    <EditorHeader
+                        title={title}
+                        onTitleChange={setTitle}
+                        isEditing={isEditing}
+                        onSave={() => setShowSaveConfirm(true)}
+                        onEdit={() => setShowEditConfirm(true)}
+                        note={note}
+                        onShowInfo={() => setShowInfoPanel(true)}
+                        onShare={handleShare}
+                        onLinkNote={() => setShowLinkModal(true)}
+                        onDelete={() => note && onDelete?.(note.id)}
+                        onClose={onClose}
                         editor={editor}
-                        fontFamily={fontFamily}
-                        setFontFamily={setFontFamily}
-                        fontSize={fontSize}
-                        setFontSize={setFontSize}
-                        isDrawing={isDrawing}
-                        setIsDrawing={setIsDrawing}
+                        wordCount={wordCount}
+                        showExportMenu={showExportMenu}
+                        setShowExportMenu={setShowExportMenu}
+                        exportButtonRef={exportButtonRef}
+                        setExportButtonRef={setExportButtonRef}
+                        inkCanvasRef={inkCanvasRef}
                     />
-                )}
 
-                {/* Quick Tags */}
-                {availableTags.length > 0 && (
-                    <div className="px-4 md:px-8 py-3 md:py-4 bg-gradient-to-r from-white/50 to-white/30 backdrop-blur-sm border-b-2 border-black/5">
-                        <div className="flex items-center gap-2 md:gap-3 flex-wrap">
-                            <span className="text-xs md:text-sm font-bold text-black/60">Quick Tags:</span>
-                            {availableTags.map((tag) => (
-                                <button
-                                    key={tag}
-                                    onClick={() => editor?.chain().focus().insertContent({ type: 'tag', attrs: { label: tag } }).run()}
-                                    className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm bg-white hover:bg-[#f5f4e8] text-black/70 font-medium rounded-full transition-colors border border-black/10 hover:border-[#ffd700]"
-                                >
-                                    {tag}
-                                </button>
-                            ))}
+                    {/* Toolbar with integrated ink controls */}
+                    {isEditing && (
+                        <EditorToolbar
+                            editor={editor}
+                            fontFamily={fontFamily}
+                            setFontFamily={setFontFamily}
+                            fontSize={fontSize}
+                            setFontSize={setFontSize}
+                            isInkMode={isInkMode}
+                            inkTool={inkTool}
+                            inkColor={inkColor}
+                            inkStrokeSize={inkStrokeSize}
+                            onToggleInkMode={() => setIsInkMode(!isInkMode)}
+                            onInkToolChange={setInkTool}
+                            onInkColorChange={setInkColor}
+                            onInkStrokeSizeChange={setInkStrokeSize}
+                            onInkUndo={() => inkCanvasRef.current?.undo()}
+                            onInkRedo={() => inkCanvasRef.current?.redo()}
+                            onInkClear={() => inkCanvasRef.current?.clear()}
+                            canInkUndo={inkStrokes.length > 0}
+                            canInkRedo={canInkRedo}
+                        />
+                    )}
+
+                    {/* Quick Tags */}
+                    {availableTags.length > 0 && (
+                        <div className="px-4 md:px-8 py-3 md:py-4 bg-gradient-to-r from-white/50 to-white/30 backdrop-blur-sm border-b-2 border-black/5">
+                            <div className="flex items-center gap-2 md:gap-3 flex-wrap">
+                                <span className="text-xs md:text-sm font-bold text-black/60">Quick Tags:</span>
+                                {availableTags.map((tag) => (
+                                    <button
+                                        key={tag}
+                                        onClick={() => editor?.chain().focus().insertContent({ type: 'tag', attrs: { label: tag } }).run()}
+                                        className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm bg-white hover:bg-[#f5f4e8] text-black/70 font-medium rounded-full transition-colors border border-black/10 hover:border-[#ffd700]"
+                                    >
+                                        {tag}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Editor Area */}
+                    <div className="flex-1 overflow-y-auto px-4 md:px-10 py-4 md:py-8 bg-white relative">
+                        {/* Ink Canvas Overlay */}
+                        <InkCanvas
+                            ref={inkCanvasRef}
+                            isActive={isInkMode}
+                            currentTool={inkTool}
+                            currentColor={inkColor}
+                            currentStrokeSize={inkStrokeSize}
+                            onStrokesChange={handleInkStrokesChange}
+                            onRedoStackChange={setCanInkRedo}
+                            initialStrokes={inkStrokes}
+                        />
+
+                        {/* Editor Content */}
+                        <div
+                            className="max-w-4xl mx-auto"
+                            style={{ pointerEvents: isInkMode ? 'none' : 'auto' }}
+                        >
+
+                            <EditorContent editor={editor} style={{ fontSize: `${fontSize}px`, fontFamily }} />
+
+                            {/* Command Menu */}
+                            <CommandMenu
+                                isOpen={showCommandMenu}
+                                position={menuPosition}
+                                search={commandSearch}
+                                editor={editor}
+                                onClose={() => setShowCommandMenu(false)}
+                            />
                         </div>
                     </div>
-                )}
 
-                {/* Editor Area */}
-                <div className="flex-1 overflow-y-auto px-4 md:px-10 py-4 md:py-8 bg-white relative">
-                    <div className="max-w-4xl mx-auto">
-                        {isDrawing && (
-                            <div className="mb-4 p-3 md:p-4 bg-[#fffef5] rounded-xl md:rounded-2xl border-2 border-[#ffd700]">
-                                <canvas
-                                    ref={canvasRef}
-                                    width={800}
-                                    height={200}
-                                    className="w-full border-2 border-dashed border-black/20 rounded-xl cursor-crosshair bg-white"
-                                    onMouseDown={startDrawing}
-                                    onMouseMove={draw}
-                                    onMouseUp={() => setIsCanvasDrawing(false)}
-                                    onMouseLeave={() => setIsCanvasDrawing(false)}
+                    {/* Footer */}
+                    <div className="px-4 md:px-8 py-3 md:py-4 border-t-2 border-black/5 flex items-center justify-between bg-white/70 backdrop-blur-sm rounded-b-[18px] md:rounded-b-[30px]">
+                        <div className="flex items-center gap-3 md:gap-6">
+                            <span className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm">
+                                <span className="w-1.5 h-1.5 md:w-2 md:h-2 bg-green-500 rounded-full animate-pulse"></span>
+                                <span className="font-medium text-black/60">Auto-saved</span>
+                            </span>
+                            <span className="text-xs md:text-sm text-black/60 font-medium">{wordCount} words</span>
+                            {Array.isArray(connectedNotes) && connectedNotes.length > 0 && (
+                                <FooterConnectionsPopup
+                                    connectedNotes={connectedNotes}
+                                    onNavigateToNote={handleNavigate}
                                 />
-                                <div className="flex gap-2 mt-2">
-                                    <button
-                                        onClick={() => canvasRef.current?.getContext('2d')?.clearRect(0, 0, 800, 200)}
-                                        className="px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-colors font-medium"
-                                    >
-                                        Clear
-                                    </button>
-                                    <button
-                                        onClick={insertDrawing}
-                                        className="px-3 py-1 text-xs bg-[#ffd700] hover:bg-[#ffed4e] text-black rounded-lg transition-colors font-semibold"
-                                    >
-                                        Insert
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-                        <EditorContent editor={editor} style={{ fontSize: `${fontSize}px`, fontFamily }} />
+                            )}
+                        </div>
+                        <span className="text-xs md:text-sm text-black/40 font-medium hidden md:inline">Press / for commands</span>
+                    </div>
+                </div>
 
-                        {/* Command Menu */}
-                        <CommandMenu
-                            isOpen={showCommandMenu}
-                            position={menuPosition}
-                            search={commandSearch}
-                            editor={editor}
-                            onClose={() => setShowCommandMenu(false)}
+                {/* Modals */}
+                {note && (
+                    <>
+                        <LinkNoteModal
+                            isOpen={showLinkModal}
+                            onClose={() => setShowLinkModal(false)}
+                            currentNote={note}
+                            availableNotes={allNotes}
+                            onLink={handleLinkNote}
                         />
-                    </div>
-                </div>
 
-                {/* Footer */}
-                <div className="px-4 md:px-8 py-3 md:py-4 border-t-2 border-black/5 flex items-center justify-between bg-white/70 backdrop-blur-sm rounded-b-[18px] md:rounded-b-[30px]">
-                    <div className="flex items-center gap-3 md:gap-6">
-                        <span className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm">
-                            <span className="w-1.5 h-1.5 md:w-2 md:h-2 bg-green-500 rounded-full animate-pulse"></span>
-                            <span className="font-medium text-black/60">Auto-saved</span>
-                        </span>
-                        <span className="text-xs md:text-sm text-black/60 font-medium">{wordCount} words</span>
-                        {Array.isArray(connectedNotes) && connectedNotes.length > 0 && (
-                            <FooterConnectionsPopup
-                                connectedNotes={connectedNotes}
-                                onNavigateToNote={handleNavigate}
-                            />
-                        )}
-                    </div>
-                    <span className="text-xs md:text-sm text-black/40 font-medium hidden md:inline">Press / for commands</span>
-                </div>
+                        <NoteInfoPanel
+                            isOpen={showInfoPanel}
+                            onClose={() => setShowInfoPanel(false)}
+                            note={note}
+                            connectedNotes={connectedNotes}
+                            onNavigateToNote={handleNavigate}
+                            onUnlinkNote={handleUnlinkNote}
+                        />
+
+                        <SyncConfirmModal
+                            isOpen={showSyncConfirm}
+                            onClose={() => setShowSyncConfirm(false)}
+                            onConfirm={handleConfirmSync}
+                            targetNoteName={connectedNotes.map(n => n.title).join(', ')}
+                            itemText={syncPendingItem}
+                        />
+                    </>
+                )}
             </div>
-
-            {/* Modals */}
-            {note && (
-                <>
-                    <LinkNoteModal
-                        isOpen={showLinkModal}
-                        onClose={() => setShowLinkModal(false)}
-                        currentNote={note}
-                        availableNotes={allNotes}
-                        onLink={handleLinkNote}
-                    />
-
-                    <NoteInfoPanel
-                        isOpen={showInfoPanel}
-                        onClose={() => setShowInfoPanel(false)}
-                        note={note}
-                        connectedNotes={connectedNotes}
-                        onNavigateToNote={handleNavigate}
-                        onUnlinkNote={handleUnlinkNote}
-                    />
-
-                    <SyncConfirmModal
-                        isOpen={showSyncConfirm}
-                        onClose={() => setShowSyncConfirm(false)}
-                        onConfirm={handleConfirmSync}
-                        targetNoteName={connectedNotes.map(n => n.title).join(', ')}
-                        itemText={syncPendingItem}
-                    />
-                </>
-            )}
-        </div>
+        </>
     );
 }

@@ -45,11 +45,18 @@ service cloud.firestore {
           validConnectedNotes();
         
         // Allow update if user owns the note
+        // This includes updating inkStrokes field
         allow update: if isOwner(userId) &&
           validConnectedNotes();
         
         // Allow delete if user owns the note
         allow delete: if isOwner(userId);
+        
+        // Handwriting blocks subcollection (for block-based handwriting)
+        match /handwritingBlocks/{blockId} {
+          allow read: if isOwner(userId);
+          allow write: if isOwner(userId);
+        }
       }
       
       // Collections subcollection under user
@@ -96,6 +103,14 @@ service cloud.firestore {
       
       allow delete: if isAuthenticated() && 
         resource.data.userId == request.auth.uid;
+      
+      // Handwriting blocks subcollection for legacy notes
+      match /handwritingBlocks/{blockId} {
+        allow read: if isAuthenticated() && 
+          get(/databases/$(database)/documents/notes/$(noteId)).data.userId == request.auth.uid;
+        allow write: if isAuthenticated() && 
+          get(/databases/$(database)/documents/notes/$(noteId)).data.userId == request.auth.uid;
+      }
     }
     
     // Legacy collections (for backward compatibility)

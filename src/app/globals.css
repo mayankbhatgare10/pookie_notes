@@ -216,3 +216,134 @@ body {
 .animate-toast-exit {
   animation: toast-exit 0.3s ease-in forwards;
 }
+
+/* ========================================
+   SMOOTH MODAL ANIMATIONS (Production Ready)
+   ======================================== */
+
+/* Modal backdrop fade */
+@keyframes modal-backdrop {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* Modal scale from center (smooth, no lag) */
+@keyframes modal-scale-center {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Apply animations */
+.animate-modal-backdrop {
+  animation: modal-backdrop 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.animate-modal-enter {
+  animation: modal-scale-center 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ========================================
+   TOUCH OPTIMIZATIONS (Mobile/Tablet)
+   ======================================== */
+
+/* Prevent text selection while drawing */
+.ink-canvas {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Smooth touch scrolling */
+.touch-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Prevent pull-to-refresh */
+.no-overscroll {
+  overscroll-behavior-y: none;
+}
+
+/* ========================================
+   PERFORMANCE OPTIMIZATIONS
+   ======================================== */
+
+/* GPU acceleration for smooth animations */
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Optimize repaints */
+.optimize-repaint {
+  contain: layout style paint;
+}
+
+/* ========================================
+   RESPONSIVE UTILITIES
+   ======================================== */
+
+/* Hide scrollbar but keep functionality */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Mobile-friendly tap targets (min 44x44px) */
+.tap-target {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+/* ========================================
+   LOADING STATES
+   ======================================== */
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: -200px 0;
+  }
+
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 0px, #f8f8f8 40px, #f0f0f0 80px);
+  background-size: 200px 100%;
+  animation: skeleton-loading 1.2s ease-in-out infinite;
+}

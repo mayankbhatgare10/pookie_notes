@@ -103,6 +103,16 @@ export default function CommandMenu({ isOpen, position, search, editor, onClose 
                 onClose();
             },
         },
+        {
+            title: 'Handwriting Block',
+            description: 'Draw with pen or stylus',
+            icon: '✍️',
+            action: () => {
+                const blockId = `hw_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                editor?.chain().focus().deleteRange({ from: editor.state.selection.from - search.length - 1, to: editor.state.selection.from }).insertHandwritingBlock({ blockId, width: 800, height: 400 }).run();
+                onClose();
+            },
+        },
     ];
 
     const filteredCommands = commands.filter(

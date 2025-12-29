@@ -23,6 +23,7 @@ interface EditorHeaderProps {
     setShowExportMenu: (show: boolean) => void;
     exportButtonRef: HTMLButtonElement | null;
     setExportButtonRef: (ref: HTMLButtonElement | null) => void;
+    inkCanvasRef?: React.RefObject<any>;
 }
 
 export default function EditorHeader({
@@ -43,6 +44,7 @@ export default function EditorHeader({
     setShowExportMenu,
     exportButtonRef,
     setExportButtonRef,
+    inkCanvasRef,
 }: EditorHeaderProps) {
     return (
         <div className="flex items-center justify-between px-4 md:px-8 py-3 md:py-5 border-b-2 border-black/5 bg-white/50 backdrop-blur-sm rounded-t-[18px] md:rounded-t-[30px] relative z-20">
@@ -100,6 +102,7 @@ export default function EditorHeader({
                             top: exportButtonRef.getBoundingClientRect().bottom + 8,
                             left: exportButtonRef.getBoundingClientRect().left
                         } : { top: 0, left: 0 }}
+                        inkCanvasRef={inkCanvasRef}
                     />
                 </div>
 
