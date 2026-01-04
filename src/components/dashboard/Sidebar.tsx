@@ -2,6 +2,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { collection, query, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { useAuth } from '@/contexts/AuthContext';
 import { FlameIcon } from '@/components/icons';
 import { THOUGHTS } from '@/utils/constants';
 import { formatTime } from '@/utils/time';
@@ -57,28 +60,75 @@ export default function Sidebar() {
 }
 
 function StreakCalendar({ currentTime }: { currentTime: Date }) {
+    const [streakDays, setStreakDays] = useState<number[]>([]);
+    const { user } = useAuth();
     const today = currentTime.getDate();
+    const currentMonth = currentTime.getMonth();
+    const currentYear = currentTime.getFullYear();
 
-    // Calculate current streak dynamically
-    // This should ideally come from your backend/state management
-    // For now, we'll calculate if user has been active consecutively up to today
-    const calculateStreak = () => {
-        // Example: User has been active from day 1 until today
-        // In real implementation, this would check actual user activity
-        const streakDays: number[] = [];
-
-        // Simulate: user was active for the last 5 consecutive days including today
-        for (let i = 4; i >= 0; i--) {
-            const day = today - i;
-            if (day > 0) {
-                streakDays.push(day);
-            }
+    // Fetch actual user activity from Firebase
+    useEffect(() => {
+        if (!user || !db) {
+            setStreakDays([]);
+            return;
         }
 
-        return streakDays;
-    };
+        const fetchUserActivity = async () => {
+            try {
+                const notesRef = collection(db!, `users/${user.uid}/notes`);
+                const q = query(notesRef);
+                const snapshot = await getDocs(q);
 
-    const streakDays = calculateStreak();
+                const activeDaysSet = new Set<number>();
+
+                snapshot.forEach((doc) => {
+                    const noteData = doc.data();
+
+                    // Check createdAt
+                    if (noteData.createdAt) {
+                        const createdDate = noteData.createdAt.toDate();
+                        if (
+                            createdDate.getMonth() === currentMonth &&
+                            createdDate.getFullYear() === currentYear
+                        ) {
+                            activeDaysSet.add(createdDate.getDate());
+                        }
+                    }
+
+                    // Check updatedAt
+                    if (noteData.updatedAt) {
+                        const updatedDate = noteData.updatedAt.toDate();
+                        if (
+                            updatedDate.getMonth() === currentMonth &&
+                            updatedDate.getFullYear() === currentYear
+                        ) {
+                            activeDaysSet.add(updatedDate.getDate());
+                        }
+                    }
+                });
+
+                // Convert to array and calculate consecutive streak
+                const activeDaysArray = Array.from(activeDaysSet).sort((a, b) => a - b);
+
+                // Calculate consecutive days from today backwards
+                const consecutiveDays: number[] = [];
+                let currentDay = today;
+
+                while (activeDaysArray.includes(currentDay) && currentDay > 0) {
+                    consecutiveDays.unshift(currentDay);
+                    currentDay--;
+                }
+
+                setStreakDays(consecutiveDays);
+            } catch (error) {
+                console.error('Error fetching user activity:', error);
+                setStreakDays([]);
+            }
+        };
+
+        fetchUserActivity();
+    }, [user, currentMonth, currentYear, today]);
+
     const streakCount = streakDays.length;
     const hasActiveStreak = streakDays.includes(today);
 
@@ -89,7 +139,7 @@ function StreakCalendar({ currentTime }: { currentTime: Date }) {
                 <div className="flex items-center gap-1.5 px-2.5 py-1 bg-[#fff4e6] rounded-full">
                     <FlameIcon className="w-3 h-3 text-orange-500" />
                     <span className="text-[10px] font-semibold text-black">
-                        {hasActiveStreak ? `${streakCount} Days` : 'No Streak'}
+                        {streakCount} {streakCount === 1 ? 'Day' : 'Days'}
                     </span>
                 </div>
             </div>
@@ -135,14 +185,10 @@ function CalendarDays({ currentTime, streakDays }: { currentTime: Date; streakDa
         const hasStreak = streakSet.has(day);
 
         if (day === today) {
+            // Current date - just circle, NO slash
             days.push(
-                <div key={day} className="aspect-square rounded-full bg-[#ffd700] border border-black flex items-center justify-center text-[11px] font-bold text-black shadow-[1px_1px_0px_#000] relative">
+                <div key={day} className="aspect-square rounded-full bg-[#ffd700] border border-black flex items-center justify-center text-[11px] font-bold text-black shadow-[1px_1px_0px_#000]">
                     {day}
-                    {hasStreak && (
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                            <div className="w-full h-[1.5px] bg-black transform rotate-45"></div>
-                        </div>
-                    )}
                 </div>
             );
         } else if (hasStreak) {
