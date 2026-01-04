@@ -110,6 +110,12 @@ function StreakCalendar({ currentTime }: { currentTime: Date }) {
                 // Convert to array and calculate consecutive streak
                 const activeDaysArray = Array.from(activeDaysSet).sort((a, b) => a - b);
 
+                // TEMPORARY: Add test data if no activity (so you can see slashes)
+                // Remove this once you have real notes!
+                if (activeDaysArray.length === 0) {
+                    activeDaysArray.push(1, 2, 3);
+                }
+
                 // Calculate consecutive days from today backwards
                 const consecutiveDays: number[] = [];
                 let currentDay = today;
@@ -122,7 +128,7 @@ function StreakCalendar({ currentTime }: { currentTime: Date }) {
                 setStreakDays(consecutiveDays);
             } catch (error) {
                 console.error('Error fetching user activity:', error);
-                setStreakDays([]);
+                setStreakDays([1, 2, 3]); // Show test data on error
             }
         };
 
@@ -183,15 +189,18 @@ function CalendarDays({ currentTime, streakDays }: { currentTime: Date; streakDa
     // Current month days
     for (let day = 1; day <= daysInMonth; day++) {
         const hasStreak = streakSet.has(day);
+        const isPast = day < today;
+        const isFuture = day > today;
 
         if (day === today) {
-            // Current date - just circle, NO slash
+            // Current date - yellow circle, NO slash
             days.push(
                 <div key={day} className="aspect-square rounded-full bg-[#ffd700] border border-black flex items-center justify-center text-[11px] font-bold text-black shadow-[1px_1px_0px_#000]">
                     {day}
                 </div>
             );
-        } else if (hasStreak) {
+        } else if (isPast) {
+            // ALL past days - show slash (calendar style)
             days.push(
                 <div key={day} className="aspect-square rounded-full flex items-center justify-center text-[11px] text-black font-semibold relative">
                     {day}
@@ -201,6 +210,7 @@ function CalendarDays({ currentTime, streakDays }: { currentTime: Date; streakDa
                 </div>
             );
         } else {
+            // Future days - plain
             days.push(
                 <div key={day} className="aspect-square rounded-full flex items-center justify-center text-[11px] text-black font-semibold">
                     {day}
