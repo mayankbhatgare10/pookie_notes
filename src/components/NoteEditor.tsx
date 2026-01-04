@@ -75,12 +75,73 @@ export default function NoteEditor({
 
     // Ink overlay state
     const [isInkMode, setIsInkMode] = useState(false);
-    const [inkTool, setInkTool] = useState<'pen' | 'pencil' | 'brush' | 'highlighter' | 'eraser'>('pen');
+    const [inkTool, setInkTool] = useState<'pen' | 'pencil' | 'brush' | 'highlighter' | 'eraser' | 'hand'>('pen');
     const [inkColor, setInkColor] = useState('#000000');
     const [inkStrokeSize, setInkStrokeSize] = useState(2);
+    const [isPanMode, setIsPanMode] = useState(false);
     const [inkStrokes, setInkStrokes] = useState<any[]>([]);
     const [canInkRedo, setCanInkRedo] = useState(false);
     const inkCanvasRef = useRef<any>(null);
+
+    // Hand tool drag-to-scroll ref
+    const editorContainerRef = useRef<HTMLDivElement>(null);
+
+    // Hand tool drag-to-scroll effect
+    useEffect(() => {
+        const container = editorContainerRef.current;
+        if (!container || inkTool !== 'hand') return;
+
+        let isMouseDown = false;
+        let startX = 0;
+        let startY = 0;
+        let scrollLeft = 0;
+        let scrollTop = 0;
+
+        const handleMouseDown = (e: MouseEvent) => {
+            isMouseDown = true;
+            startX = e.pageX - container.offsetLeft;
+            startY = e.pageY - container.offsetTop;
+            scrollLeft = container.scrollLeft;
+            scrollTop = container.scrollTop;
+            container.style.cursor = 'grabbing';
+            e.preventDefault();
+        };
+
+        const handleMouseMove = (e: MouseEvent) => {
+            if (!isMouseDown) return;
+            e.preventDefault();
+
+            const x = e.pageX - container.offsetLeft;
+            const y = e.pageY - container.offsetTop;
+            const walkX = (x - startX) * 1.5; // Scroll speed multiplier
+            const walkY = (y - startY) * 1.5;
+
+            container.scrollLeft = scrollLeft - walkX;
+            container.scrollTop = scrollTop - walkY;
+        };
+
+        const handleMouseUp = () => {
+            isMouseDown = false;
+            container.style.cursor = 'grab';
+        };
+
+        const handleMouseLeave = () => {
+            isMouseDown = false;
+            container.style.cursor = 'grab';
+        };
+
+        container.addEventListener('mousedown', handleMouseDown);
+        container.addEventListener('mousemove', handleMouseMove);
+        container.addEventListener('mouseup', handleMouseUp);
+        container.addEventListener('mouseleave', handleMouseLeave);
+
+        return () => {
+            container.removeEventListener('mousedown', handleMouseDown);
+            container.removeEventListener('mousemove', handleMouseMove);
+            container.removeEventListener('mouseup', handleMouseUp);
+            container.removeEventListener('mouseleave', handleMouseLeave);
+        };
+    }, [inkTool]);
 
     const { user } = useAuth();
     const { showToast } = useToast();
@@ -596,7 +657,14 @@ export default function NoteEditor({
                     )}
 
                     {/* Editor Area */}
-                    <div className="flex-1 overflow-y-auto px-4 md:px-10 py-4 md:py-8 bg-white relative">
+                    <div
+                        ref={editorContainerRef}
+                        className="flex-1 overflow-y-auto px-4 md:px-10 py-4 md:py-8 bg-white relative"
+                        style={{
+                            cursor: inkTool === 'hand' ? 'grab' : 'auto',
+                            userSelect: inkTool === 'hand' ? 'none' : 'auto'
+                        }}
+                    >
                         {/* Ink Canvas Overlay */}
                         <InkCanvas
                             ref={inkCanvasRef}
@@ -612,7 +680,10 @@ export default function NoteEditor({
                         {/* Editor Content */}
                         <div
                             className="max-w-4xl mx-auto"
-                            style={{ pointerEvents: isInkMode ? 'none' : 'auto' }}
+                            style={{
+                                pointerEvents: (isInkMode || inkTool === 'hand') ? 'none' : 'auto',
+                                minHeight: '200vh' // Make it 2x viewport height so there's always space to scroll
+                            }}
                         >
 
                             <EditorContent editor={editor} style={{ fontSize: `${fontSize}px`, fontFamily }} />

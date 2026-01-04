@@ -14,11 +14,11 @@ interface EditorToolbarProps {
     setFontSize: (val: string) => void;
     // Ink mode props
     isInkMode: boolean;
-    inkTool: 'pen' | 'pencil' | 'brush' | 'highlighter' | 'eraser';
+    inkTool: 'pen' | 'pencil' | 'brush' | 'highlighter' | 'eraser' | 'hand';
     inkColor: string;
     inkStrokeSize: number;
     onToggleInkMode: () => void;
-    onInkToolChange: (tool: 'pen' | 'pencil' | 'brush' | 'highlighter' | 'eraser') => void;
+    onInkToolChange: (tool: 'pen' | 'pencil' | 'brush' | 'highlighter' | 'eraser' | 'hand') => void;
     onInkColorChange: (color: string) => void;
     onInkStrokeSizeChange: (size: number) => void;
     onInkUndo: () => void;
@@ -222,6 +222,23 @@ export default function EditorToolbar({
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                         </svg>
                     </button>
+
+                    {/* Hand Tool Toggle */}
+                    <button
+                        onClick={() => {
+                            if (inkTool === 'hand') {
+                                onInkToolChange('pen'); // Switch back to pen
+                            } else {
+                                onInkToolChange('hand'); // Activate hand tool
+                            }
+                        }}
+                        className={`p-2 rounded-lg transition-colors tap-target flex items-center justify-center ${inkTool === 'hand' ? 'bg-[#ffd700]' : 'hover:bg-black/5'}`}
+                        title="Hand Tool (Pan)"
+                    >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" />
+                        </svg>
+                    </button>
                 </div>
 
                 <div className="h-8 w-px bg-black/10" />
@@ -247,9 +264,9 @@ export default function EditorToolbar({
 
                         {/* Brush Type Dropdown */}
                         <select
-                            value={inkTool}
+                            value={inkTool === 'hand' ? 'pen' : inkTool}
                             onChange={(e) => onInkToolChange(e.target.value as any)}
-                            className="px-4 py-2 bg-white border border-[#e0e0e0] rounded-lg text-sm font-medium focus:outline-none focus:border-[#ffd700] transition-colors cursor-pointer"
+                            className="px-4 py-2 bg-white border border-[#e0e0e0] rounded-lg text-sm font-medium focus:outline-none focus:border-[#ffd700] transition-colors cursor-pointer tap-target"
                         >
                             <option value="pen">✏️ Pen</option>
                             <option value="pencil">✎ Pencil</option>
@@ -258,8 +275,8 @@ export default function EditorToolbar({
                             <option value="eraser">🧹 Eraser</option>
                         </select>
 
-                        {/* Stroke Size - Only for non-eraser tools */}
-                        {inkTool !== 'eraser' && (
+                        {/* Stroke Size - Only for drawing tools (not eraser or hand) */}
+                        {inkTool !== 'eraser' && inkTool !== 'hand' && (
                             <>
                                 <div className="h-8 w-px bg-black/10" />
                                 <div className="flex items-center gap-1">

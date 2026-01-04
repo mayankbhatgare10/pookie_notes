@@ -27,7 +27,7 @@ export interface InkCanvasRef {
 
 interface InkCanvasProps {
     isActive: boolean;
-    currentTool: 'pen' | 'pencil' | 'brush' | 'highlighter' | 'eraser';
+    currentTool: 'pen' | 'pencil' | 'brush' | 'highlighter' | 'eraser' | 'hand';
     currentColor: string;
     currentStrokeSize?: number;
     onStrokesChange?: (strokes: Stroke[]) => void;
@@ -88,7 +88,7 @@ const InkCanvas = forwardRef<InkCanvasRef, InkCanvasProps>(({
         const { konva } = konvaModules;
         const container = containerRef.current;
 
-        // Create stage that fills the container
+        // Use normal container size (not huge canvas)
         const stage = new konva.Stage({
             container: container,
             width: container.offsetWidth,
@@ -109,7 +109,6 @@ const InkCanvas = forwardRef<InkCanvasRef, InkCanvasProps>(({
             if (containerRef.current) {
                 stage.width(containerRef.current.offsetWidth);
                 stage.height(containerRef.current.offsetHeight);
-                stage.batchDraw();
             }
         };
 
@@ -119,7 +118,7 @@ const InkCanvas = forwardRef<InkCanvasRef, InkCanvasProps>(({
             window.removeEventListener('resize', handleResize);
             stage.destroy();
         };
-    }, [isKonvaLoaded, konvaModules]); // Removed isActive dependency
+    }, [isKonvaLoaded, konvaModules, isActive]);
 
     // Render strokes
     const renderStrokes = useCallback(
@@ -159,6 +158,11 @@ const InkCanvas = forwardRef<InkCanvasRef, InkCanvasProps>(({
     const handlePointerDown = useCallback(
         (e: PointerEvent) => {
             if (!isActive || !stageRef.current) return;
+
+            // Skip drawing if hand tool is selected
+            if (currentTool === 'hand') {
+                return;
+            }
 
             // Palm rejection
             if (e.pointerType === 'pen') {
@@ -385,8 +389,13 @@ const InkCanvas = forwardRef<InkCanvasRef, InkCanvasProps>(({
             ref={containerRef}
             className="absolute inset-0 z-10 ink-canvas"
             style={{
-                pointerEvents: isActive ? 'auto' : 'none',
-                cursor: isActive ? (currentTool === 'eraser' ? 'pointer' : 'crosshair') : 'default',
+                pointerEvents: (isActive && currentTool !== 'hand') ? 'auto' : 'none',
+                cursor: isActive
+                    ? (currentTool === 'hand'
+                        ? 'grab'
+                        : (currentTool === 'eraser' ? 'pointer' : 'crosshair')
+                    )
+                    : 'default',
             }}
         />
     );
