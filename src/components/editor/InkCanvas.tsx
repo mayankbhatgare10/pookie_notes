@@ -33,6 +33,7 @@ interface InkCanvasProps {
     onStrokesChange?: (strokes: Stroke[]) => void;
     onRedoStackChange?: (canRedo: boolean) => void;
     initialStrokes?: Stroke[];
+    zoom?: number;
 }
 
 const InkCanvas = forwardRef<InkCanvasRef, InkCanvasProps>(({
@@ -43,6 +44,7 @@ const InkCanvas = forwardRef<InkCanvasRef, InkCanvasProps>(({
     onStrokesChange,
     onRedoStackChange,
     initialStrokes = [],
+    zoom = 1,
 }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const stageRef = useRef<any>(null);
@@ -387,7 +389,7 @@ const InkCanvas = forwardRef<InkCanvasRef, InkCanvasProps>(({
     return (
         <div
             ref={containerRef}
-            className="absolute inset-0 z-10 ink-canvas"
+            className="absolute top-0 left-0 z-10 ink-canvas"
             style={{
                 pointerEvents: (isActive && currentTool !== 'hand') ? 'auto' : 'none',
                 cursor: isActive
@@ -396,6 +398,13 @@ const InkCanvas = forwardRef<InkCanvasRef, InkCanvasProps>(({
                         : (currentTool === 'eraser' ? 'pointer' : 'crosshair')
                     )
                     : 'default',
+                minHeight: '200vh',
+                minWidth: '200vw',
+                width: '200vw',
+                height: '200vh',
+                transform: `scale(${zoom})`,
+                transformOrigin: 'top left',
+                transition: 'transform 0.1s ease-out'
             }}
         />
     );

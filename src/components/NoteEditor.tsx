@@ -28,6 +28,7 @@ import InkCanvas from './editor/InkCanvas';
 import EditConfirmModal from './EditConfirmModal';
 
 import { Note } from '@/hooks/useNotes';
+import { Collection } from '@/hooks/useCollections';
 import { useNoteLinking } from '@/hooks/useNoteLinking';
 import { useToast } from '@/contexts/ToastContext';
 import { shareNoteContent } from '@/utils/noteFormatting';
@@ -43,6 +44,7 @@ interface NoteEditorProps {
     onDelete?: (noteId: string) => void;
     collectionTags?: string[];
     allNotes?: Note[];
+    collections?: Collection[];
     onNavigateToNote?: (noteId: string) => void;
 }
 
@@ -54,6 +56,7 @@ export default function NoteEditor({
     onDelete,
     collectionTags = [],
     allNotes = [],
+    collections = [],
     onNavigateToNote
 }: NoteEditorProps) {
     // Basic editor state
@@ -85,6 +88,37 @@ export default function NoteEditor({
 
     // Hand tool drag-to-scroll ref
     const editorContainerRef = useRef<HTMLDivElement>(null);
+
+    // Zoom state
+    const [zoom, setZoom] = useState(1);
+
+    // Zoom with Ctrl+scroll or trackpad pinch
+    useEffect(() => {
+        const container = editorContainerRef.current;
+        if (!container) return;
+
+        const handleWheel = (e: WheelEvent) => {
+            // Ctrl+scroll or pinch gesture
+            if (e.ctrlKey || e.metaKey) {
+                e.preventDefault();
+
+                const delta = e.deltaY;
+                const zoomSpeed = 0.001;
+
+                setZoom(prevZoom => {
+                    const newZoom = prevZoom - delta * zoomSpeed;
+                    // Limit zoom between 0.5x and 3x
+                    return Math.min(Math.max(newZoom, 0.5), 3);
+                });
+            }
+        };
+
+        container.addEventListener('wheel', handleWheel, { passive: false });
+
+        return () => {
+            container.removeEventListener('wheel', handleWheel);
+        };
+    }, []);
 
     // Hand tool drag-to-scroll effect
     useEffect(() => {
@@ -374,15 +408,21 @@ export default function NoteEditor({
     // Keyboard shortcuts for ink mode
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            // Toggle ink mode with 'I' key
-            if ((e.key === 'i' || e.key === 'I') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+            // Don't intercept if user is typing in an input, textarea, or contenteditable
+            const target = e.target as HTMLElement;
+            const isTyping = target.tagName === 'INPUT' ||
+                target.tagName === 'TEXTAREA' ||
+                target.isContentEditable;
+
+            // Toggle ink mode with 'I' key (only when not typing)
+            if ((e.key === 'i' || e.key === 'I') && !e.ctrlKey && !e.metaKey && !e.altKey && !isTyping) {
                 e.preventDefault();
                 setIsInkMode(prev => !prev);
                 return;
             }
 
-            // Ink mode shortcuts
-            if (isInkMode) {
+            // Ink mode shortcuts (only when not typing)
+            if (isInkMode && !isTyping) {
                 if (e.key === 'p' || e.key === 'P') {
                     e.preventDefault();
                     setInkTool('pen');
@@ -659,7 +699,7 @@ export default function NoteEditor({
                     {/* Editor Area */}
                     <div
                         ref={editorContainerRef}
-                        className="flex-1 overflow-y-auto px-4 md:px-10 py-4 md:py-8 bg-white relative"
+                        className="flex-1 overflow-auto px-4 md:px-10 py-4 md:py-8 bg-white relative"
                         style={{
                             cursor: inkTool === 'hand' ? 'grab' : 'auto',
                             userSelect: inkTool === 'hand' ? 'none' : 'auto'
@@ -675,14 +715,20 @@ export default function NoteEditor({
                             onStrokesChange={handleInkStrokesChange}
                             onRedoStackChange={setCanInkRedo}
                             initialStrokes={inkStrokes}
+                            zoom={zoom}
                         />
 
                         {/* Editor Content */}
                         <div
-                            className="max-w-4xl mx-auto"
+                            className="mx-auto"
                             style={{
                                 pointerEvents: (isInkMode || inkTool === 'hand') ? 'none' : 'auto',
-                                minHeight: '200vh' // Make it 2x viewport height so there's always space to scroll
+                                minHeight: '200vh', // 2x viewport height for vertical scroll
+                                minWidth: '200vw',  // 2x viewport width for horizontal scroll
+                                maxWidth: 'none',   // Remove width limit
+                                transform: `scale(${zoom})`,
+                                transformOrigin: 'top left',
+                                transition: 'transform 0.1s ease-out'
                             }}
                         >
 
@@ -734,6 +780,7 @@ export default function NoteEditor({
                             onClose={() => setShowInfoPanel(false)}
                             note={note}
                             connectedNotes={connectedNotes}
+                            collection={note.collectionId ? collections.find(c => c.id === note.collectionId) : null}
                             onNavigateToNote={handleNavigate}
                             onUnlinkNote={handleUnlinkNote}
                         />
