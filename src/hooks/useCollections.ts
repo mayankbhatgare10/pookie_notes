@@ -98,8 +98,10 @@ export const useCollections = () => {
     };
 
     const handleUpdateCollection = async (collectionId: string, updates: UpdateCollectionData) => {
+        if (!user) return;
+
         try {
-            await updateCollectionService(collectionId, updates);
+            await updateCollectionService(user.uid, collectionId, updates);
 
             setCollections(collections.map(collection =>
                 collection.id === collectionId
@@ -115,10 +117,12 @@ export const useCollections = () => {
     };
 
     const handleDeleteCollection = async (collectionId: string) => {
+        if (!user) return;
+
         const collection = collections.find(c => c.id === collectionId);
 
         try {
-            await deleteCollectionService(collectionId);
+            await deleteCollectionService(user.uid, collectionId);
             setCollections(collections.filter(c => c.id !== collectionId));
             showToast(`"${collection?.name || 'Collection'}" deleted! Poof, it's gone. 🗑️`, 'success');
         } catch (error) {
@@ -128,8 +132,10 @@ export const useCollections = () => {
     };
 
     const handleAddTag = async (collectionId: string, tag: string) => {
+        if (!user) return;
+
         try {
-            await addTagToCollection(collectionId, tag);
+            await addTagToCollection(user.uid, collectionId, tag);
 
             setCollections(collections.map(collection =>
                 collection.id === collectionId
@@ -145,8 +151,10 @@ export const useCollections = () => {
     };
 
     const handleRemoveTag = async (collectionId: string, tag: string) => {
+        if (!user) return;
+
         try {
-            await removeTagFromCollection(collectionId, tag);
+            await removeTagFromCollection(user.uid, collectionId, tag);
 
             setCollections(collections.map(collection =>
                 collection.id === collectionId

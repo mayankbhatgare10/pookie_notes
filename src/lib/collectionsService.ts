@@ -25,7 +25,6 @@ export interface Collection {
     isPrivate?: boolean;
     passwordHash?: string;
     createdAt: Timestamp | FieldValue | string;
-    updatedAt: Timestamp | FieldValue | string;
 }
 
 export interface CreateCollectionData {
@@ -56,7 +55,7 @@ export async function createCollection(
     }
 
     try {
-        const collectionRef = doc(collection(db, 'collections'));
+        const collectionRef = doc(collection(db, 'users', userId, 'collections'));
         const now = serverTimestamp();
 
         // Hash password if provided
@@ -73,7 +72,6 @@ export async function createCollection(
             tags: collectionData.tags || [],
             isPrivate: collectionData.isPrivate || false,
             createdAt: now,
-            updatedAt: now,
         };
 
         // Only add passwordHash if it's defined (Firestore doesn't accept undefined values)
@@ -103,9 +101,7 @@ export async function getUserCollections(userId: string): Promise<Collection[]> 
 
     try {
         const collectionsQuery = query(
-            collection(db, 'collections'),
-            where('userId', '==', userId)
-            // Removed orderBy to avoid index requirement - will sort client-side
+            collection(db, 'users', userId, 'collections')
         );
 
         const snapshot = await getDocs(collectionsQuery);
@@ -129,13 +125,13 @@ export async function getUserCollections(userId: string): Promise<Collection[]> 
 /**
  * Get a specific collection by ID
  */
-export async function getCollection(collectionId: string): Promise<Collection | null> {
+export async function getCollection(userId: string, collectionId: string): Promise<Collection | null> {
     if (!db) {
         throw new Error('Firestore is not initialized');
     }
 
     try {
-        const collectionDoc = await getDoc(doc(db, 'collections', collectionId));
+        const collectionDoc = await getDoc(doc(db, 'users', userId, 'collections', collectionId));
         if (collectionDoc.exists()) {
             return {
                 id: collectionDoc.id,
@@ -153,6 +149,7 @@ export async function getCollection(collectionId: string): Promise<Collection | 
  * Update a collection
  */
 export async function updateCollection(
+    userId: string,
     collectionId: string,
     updates: UpdateCollectionData
 ): Promise<void> {
@@ -161,11 +158,8 @@ export async function updateCollection(
     }
 
     try {
-        const collectionRef = doc(db, 'collections', collectionId);
-        await updateDoc(collectionRef, {
-            ...updates,
-            updatedAt: serverTimestamp(),
-        });
+        const collectionRef = doc(db, 'users', userId, 'collections', collectionId);
+        await updateDoc(collectionRef, updates as any);
     } catch (error) {
         console.error('Error updating collection:', error);
         throw error;
@@ -175,13 +169,13 @@ export async function updateCollection(
 /**
  * Delete a collection
  */
-export async function deleteCollection(collectionId: string): Promise<void> {
+export async function deleteCollection(userId: string, collectionId: string): Promise<void> {
     if (!db) {
         throw new Error('Firestore is not initialized');
     }
 
     try {
-        await deleteDoc(doc(db, 'collections', collectionId));
+        await deleteDoc(doc(db, 'users', userId, 'collections', collectionId));
     } catch (error) {
         console.error('Error deleting collection:', error);
         throw error;
@@ -192,6 +186,7 @@ export async function deleteCollection(collectionId: string): Promise<void> {
  * Add a tag to a collection
  */
 export async function addTagToCollection(
+    userId: string,
     collectionId: string,
     tag: string
 ): Promise<void> {
@@ -200,7 +195,7 @@ export async function addTagToCollection(
     }
 
     try {
-        const collectionDoc = await getCollection(collectionId);
+        const collectionDoc = await getCollection(userId, collectionId);
         if (!collectionDoc) {
             throw new Error('Collection not found');
         }
@@ -208,7 +203,7 @@ export async function addTagToCollection(
         const tags = collectionDoc.tags || [];
         if (!tags.includes(tag)) {
             tags.push(tag);
-            await updateCollection(collectionId, { tags });
+            await updateCollection(userId, collectionId, { tags });
         }
     } catch (error) {
         console.error('Error adding tag to collection:', error);
@@ -220,6 +215,7 @@ export async function addTagToCollection(
  * Remove a tag from a collection
  */
 export async function removeTagFromCollection(
+    userId: string,
     collectionId: string,
     tag: string
 ): Promise<void> {
@@ -228,14 +224,14 @@ export async function removeTagFromCollection(
     }
 
     try {
-        const collectionDoc = await getCollection(collectionId);
+        const collectionDoc = await getCollection(userId, collectionId);
         if (!collectionDoc) {
             throw new Error('Collection not found');
         }
 
         const tags = collectionDoc.tags || [];
         const updatedTags = tags.filter(t => t !== tag);
-        await updateCollection(collectionId, { tags: updatedTags });
+        await updateCollection(userId, collectionId, { tags: updatedTags });
     } catch (error) {
         console.error('Error removing tag from collection:', error);
         throw error;

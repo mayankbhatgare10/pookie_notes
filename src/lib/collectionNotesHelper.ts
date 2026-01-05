@@ -45,7 +45,7 @@ export async function deleteCollectionWithNotes(
         }
 
         // Finally, delete the collection
-        await deleteCollectionDoc(collectionId);
+        await deleteCollectionDoc(userId, collectionId);
     } catch (error) {
         console.error('Error deleting collection with notes:', error);
         throw error;
