@@ -83,19 +83,13 @@ export async function createNote(
             title: noteData.title,
             content: noteData.content || '',
             color: noteData.color,
-            lastEdited: now,
+            lastEdited: new Date().toISOString(),
             isStarred: false,
             isArchived: false,
             collectionId: noteData.collectionId || null,
             isPrivate: noteData.isPrivate || false,
             createdAt: now,
-            updatedAt: now,
-            connectedNotes: [], // Initialize empty connections array
-            metadata: {
-                createdAt: new Date().toISOString(),
-                lastModified: new Date().toISOString(),
-                totalConnections: 0,
-            },
+            connectedNotes: [],
         };
 
         // Only add passwordHash if it exists

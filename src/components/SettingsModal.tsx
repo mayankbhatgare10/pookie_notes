@@ -128,6 +128,8 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         onClose();
     };
 
+
+
     if (!isOpen) return null;
 
     return (
