@@ -214,7 +214,7 @@ export async function saveInkStrokes(
             inkUpdatedAt: new Date().toISOString(),
         }, { merge: true });
 
-        console.log('✅ Ink strokes saved for note:', noteId);
+        console.log('✅ Ink strokes saved for note:', noteId, '| Count:', strokes.length);
     } catch (error) {
         console.error('❌ Error saving ink strokes:', error);
         throw error;
@@ -238,9 +238,12 @@ export async function loadInkStrokes(
 
         if (snapshot.exists()) {
             const data = snapshot.data();
-            return data.inkStrokes || [];
+            const strokes = data.inkStrokes || [];
+            console.log('📥 Loaded ink strokes for note:', noteId, '| Count:', strokes.length);
+            return strokes;
         }
 
+        console.log('⚠️ No ink strokes found for note:', noteId);
         return [];
     } catch (error) {
         console.error('❌ Error loading ink strokes:', error);

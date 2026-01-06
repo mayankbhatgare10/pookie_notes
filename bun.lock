@@ -18,10 +18,143 @@
         "@tiptap/extension-placeholder": "^3.14.0",
         "@tiptap/extension-strike": "^3.14.0",
         "@tiptap/extension-task-item": "^3.14.0",
-        "@tiptap/extension-task-list": "^3.14.0",
-        "@tiptap/extension-text": "^3.14.0",
-        "@tiptap/extension-text-align": "^3.14.0",
-        "@tiptap/extension-text-style": "^3.14.0",
+        "@tiptap/extension-task-list": "^3.14.👂 Setting up event listener for note: hAdqrtCzqB1W7U5S9ClW NoteEditor.tsx:337:17
+✅ Event listener attached NoteEditor.tsx:372:17
+🔧 Sync listener setup: 
+Object { noteId: "hAdqrtCzqB1W7U5S9ClW", isEditing: false, hasConnections: false }
+NoteEditor.tsx:452:17
+📊 Initial checked count: 0 NoteEditor.tsx:471:17
+🎨 Loading Konva.js... lazyLoadKonva.ts:10:17
+✅ Konva.js loaded 
+Object { _global: Window, version: "10.0.12", isBrowser: true, isUnminified: true, dblClickWindow: 400, getAngle: getAngle(angle)
+, enableTrace: false, pointerEventsEnabled: true, autoDrawEnabled: true, hitOnDragEnabled: false, … }
+lazyLoadKonva.ts:14:17
+✅ Konva.js loaded 
+Object { _global: Window, version: "10.0.12", isBrowser: true, isUnminified: true, dblClickWindow: 400, getAngle: getAngle(angle)
+, enableTrace: false, pointerEventsEnabled: true, autoDrawEnabled: true, hitOnDragEnabled: false, … }
+lazyLoadKonva.ts:14:17
+📥 Loaded ink strokes for note: hAdqrtCzqB1W7U5S9ClW | Count: 6 handwritingService.ts:242:21
+📝 Loaded ink strokes: 6 NoteEditor.tsx:319:29
+🔄 Reloaded note from Firestore: 
+Object { noteId: "hAdqrtCzqB1W7U5S9ClW", hasConnectedNotes: true, connectedNotes: [] }
+useNoteLinking.ts:28:29
+🔄 Loaded latest content from Firestore NoteEditor.tsx:289:37
+🔄 Syncing initial strokes to canvas: 6 InkCanvas.tsx:128:21
+🔧 Sync listener setup: 
+Object { noteId: "hAdqrtCzqB1W7U5S9ClW", isEditing: false, hasConnections: false }
+NoteEditor.tsx:452:17
+📊 Initial checked count: 0 NoteEditor.tsx:471:17
+⏸️ Not in edit mode, skipping NoteEditor.tsx:475:25
+🔧 Sync listener setup: 
+Object { noteId: "hAdqrtCzqB1W7U5S9ClW", isEditing: true, hasConnections: false }
+NoteEditor.tsx:452:17
+📊 Initial checked count: 0 NoteEditor.tsx:471:17
+📝 Update detected: 
+Object { lastCount: 0, currentCount: 0, hasConnections: false }
+NoteEditor.tsx:490:21
+✍️ Stroke completed! Total strokes: 7 InkCanvas.tsx:302:17
+🔄 Syncing initial strokes to canvas: 7 InkCanvas.tsx:128:21
+✍️ Stroke completed! Total strokes: 8 InkCanvas.tsx:302:17
+🔄 Syncing initial strokes to canvas: 8 InkCanvas.tsx:128:21
+✍️ Stroke completed! Total strokes: 9 InkCanvas.tsx:302:17
+🔄 Syncing initial strokes to canvas: 9 InkCanvas.tsx:128:21
+✅ Ink strokes saved for note: hAdqrtCzqB1W7U5S9ClW | Count: 7 handwritingService.ts:217:17
+✅ Ink strokes auto-saved NoteEditor.tsx:394:25
+✅ Ink strokes saved for note: hAdqrtCzqB1W7U5S9ClW | Count: 8 handwritingService.ts:217:17
+✅ Ink strokes auto-saved NoteEditor.tsx:394:25
+✅ Ink strokes saved for note: hAdqrtCzqB1W7U5S9ClW | Count: 9 handwritingService.ts:217:17
+✅ Ink strokes auto-saved NoteEditor.tsx:394:25
+✍️ Stroke completed! Total strokes: 10 InkCanvas.tsx:302:17
+🔄 Syncing initial strokes to canvas: 10 InkCanvas.tsx:128:21
+✍️ Stroke completed! Total strokes: 11 InkCanvas.tsx:302:17
+🔄 Syncing initial strokes to canvas: 11 InkCanvas.tsx:128:21
+✅ Ink strokes saved for note: hAdqrtCzqB1W7U5S9ClW | Count: 10 handwritingService.ts:217:17
+✅ Ink strokes auto-saved NoteEditor.tsx:394:25
+✅ Ink strokes saved for note: hAdqrtCzqB1W7U5S9ClW | Count: 11 handwritingService.ts:217:17
+✅ Ink strokes auto-saved NoteEditor.tsx:394:25
+✍️ Stroke completed! Total strokes: 12 InkCanvas.tsx:302:17
+🔄 Syncing initial strokes to canvas: 12 InkCanvas.tsx:128:21
+✅ Ink strokes saved for note: hAdqrtCzqB1W7U5S9ClW | Count: 12 handwritingService.ts:217:17
+✅ Ink strokes auto-saved NoteEditor.tsx:394:25
+✍️ Stroke completed! Total strokes: 13 InkCanvas.tsx:302:17
+🔄 Syncing initial strokes to canvas: 13 InkCanvas.tsx:128:21
+✍️ Stroke completed! Total strokes: 14 InkCanvas.tsx:302:17
+🔄 Syncing initial strokes to canvas: 14 InkCanvas.tsx:128:21
+✅ Ink strokes saved for note: hAdqrtCzqB1W7U5S9ClW | Count: 13 handwritingService.ts:217:17
+✅ Ink strokes auto-saved NoteEditor.tsx:394:25
+✅ Ink strokes saved for note: hAdqrtCzqB1W7U5S9ClW | Count: 14 handwritingService.ts:217:17
+✅ Ink strokes auto-saved NoteEditor.tsx:394:25
+✍️ Stroke completed! Total strokes: 15 InkCanvas.tsx:302:17
+🔄 Syncing initial strokes to canvas: 15 InkCanvas.tsx:128:21
+✍️ Stroke completed! Total strokes: 16 InkCanvas.tsx:302:17
+🔄 Syncing initial strokes to canvas: 16 InkCanvas.tsx:128:21
+✅ Ink strokes saved for note: hAdqrtCzqB1W7U5S9ClW | Count: 15 handwritingService.ts:217:17
+✅ Ink strokes auto-saved NoteEditor.tsx:394:25
+✅ Ink strokes saved for note: hAdqrtCzqB1W7U5S9ClW | Count: 16 handwritingService.ts:217:17
+✅ Ink strokes auto-saved NoteEditor.tsx:394:25
+🎨 Export called, strokes count: 16 InkCanvas.tsx:383:17
+📏 Bounding box: 
+Object { minX: 105.39999389648438, minY: 123.06666564941406, maxX: 799.3999938964844, maxY: 1628.2666625976562 }
+InkCanvas.tsx:414:17
+📐 Export dimensions: 
+Object { width: 794, height: 1605.1999969482422 }
+InkCanvas.tsx:426:17
+✅ Export complete, data URL length: 358602 InkCanvas.tsx:463:17
+SES Removing unpermitted intrinsics lockdown-install.js:1:203117
+  Removing intrinsics.%MapPrototype%.getOrInsert lockdown-install.js:1:202962
+  Removing intrinsics.%MapPrototype%.getOrInsertComputed lockdown-install.js:1:202962
+  Removing intrinsics.%WeakMapPrototype%.getOrInsert lockdown-install.js:1:202962
+  Removing intrinsics.%WeakMapPrototype%.getOrInsertComputed lockdown-install.js:1:202962
+  Removing intrinsics.%DatePrototype%.toTemporalInstant lockdown-install.js:1:202962
+🎨 Export called, strokes count: 16 InkCanvas.tsx:383:17
+📏 Bounding box: 
+Object { minX: 105.39999389648438, minY: 123.06666564941406, maxX: 799.3999938964844, maxY: 1628.2666625976562 }
+InkCanvas.tsx:414:17
+📐 Export dimensions: 
+Object { width: 794, height: 1605.1999969482422 }
+​
+height: 1605.1999969482422
+​
+width: 794
+​
+<prototype>: Object { … }
+​​
+__defineGetter__: function __defineGetter__()
+​​
+__defineSetter__: function __defineSetter__()
+​​
+__lookupGetter__: function __lookupGetter__()
+​​
+__lookupSetter__: function __lookupSetter__()
+​​
+__proto__: 
+​​
+constructor: function Object()
+​​
+hasOwnProperty: function hasOwnProperty()
+​​
+isPrototypeOf: function isPrototypeOf()
+​​
+propertyIsEnumerable: function propertyIsEnumerable()
+​​
+toLocaleString: function toLocaleString()
+​​
+toString: function toString()
+​​
+valueOf: function valueOf()
+​​
+<get __proto__()>: function __proto__()
+​​
+<set __proto__()>: function __proto__()
+InkCanvas.tsx:426:17
+✅ Export complete, data URL length: 358602 InkCanvas.tsx:463:17
+SES Removing unpermitted intrinsics lockdown-install.js:1:203117
+  Removing intrinsics.%MapPrototype%.getOrInsert lockdown-install.js:1:202962
+  Removing intrinsics.%MapPrototype%.getOrInsertComputed lockdown-install.js:1:202962
+  Removing intrinsics.%WeakMapPrototype%.getOrInsert lockdown-install.js:1:202962
+  Removing intrinsics.%WeakMapPrototype%.getOrInsertComputed lockdown-install.js:1:202962
+  Removing intrinsics.%DatePrototype%.toTemporalInstant lockdown-install.js:1:202962
+
         "@tiptap/extension-underline": "^3.14.0",
         "@tiptap/react": "^3.14.0",
         "@tiptap/starter-kit": "^3.14.0",

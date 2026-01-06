@@ -22,7 +22,7 @@ export interface InkCanvasRef {
     redo: () => void;
     getStrokes: () => Stroke[];
     setStrokes: (strokes: Stroke[]) => void;
-    exportToPNG: () => string;
+    exportToPNG: () => Promise<string>;
 }
 
 interface InkCanvasProps {
@@ -90,7 +90,7 @@ const InkCanvas = forwardRef<InkCanvasRef, InkCanvasProps>(({
         const { konva } = konvaModules;
         const container = containerRef.current;
 
-        // Use normal container size (not huge canvas)
+        // Use container's actual size
         const stage = new konva.Stage({
             container: container,
             width: container.offsetWidth,
@@ -121,6 +121,14 @@ const InkCanvas = forwardRef<InkCanvasRef, InkCanvasProps>(({
             stage.destroy();
         };
     }, [isKonvaLoaded, konvaModules, isActive]);
+
+    // Sync initialStrokes to internal state when it changes
+    useEffect(() => {
+        if (initialStrokes && initialStrokes.length > 0) {
+            console.log('🔄 Syncing initial strokes to canvas:', initialStrokes.length);
+            setStrokes(initialStrokes);
+        }
+    }, [initialStrokes]);
 
     // Render strokes
     const renderStrokes = useCallback(
@@ -291,6 +299,17 @@ const InkCanvas = forwardRef<InkCanvasRef, InkCanvasProps>(({
         if (!isDrawing || !currentStroke) return;
 
         const newStrokes = [...strokes, currentStroke];
+
+        // Log stroke details for debugging
+        const firstPoint = { x: currentStroke.points[0], y: currentStroke.points[1] };
+        const lastPoint = {
+            x: currentStroke.points[currentStroke.points.length - 2],
+            y: currentStroke.points[currentStroke.points.length - 1]
+        };
+        console.log('✍️ Stroke completed! Total strokes:', newStrokes.length,
+            '| Points:', currentStroke.points.length / 2,
+            '| Start:', firstPoint, '| End:', lastPoint);
+
         setStrokes(newStrokes);
         setUndoStack([...undoStack, strokes]);
         setRedoStack([]);
@@ -369,11 +388,89 @@ const InkCanvas = forwardRef<InkCanvasRef, InkCanvasProps>(({
         }
     }, [undoStack, strokes, onStrokesChange]);
 
-    // Export to PNG
-    const exportToPNG = useCallback(() => {
-        if (!stageRef.current) return '';
-        return stageRef.current.toDataURL({ pixelRatio: 2 });
-    }, []);
+    // Export to PNG - captures the entire drawing using Canvas 2D
+    const exportToPNG = useCallback(async () => {
+        console.log('🎨 Export called, strokes count:', strokes.length);
+
+        if (strokes.length === 0) {
+            console.log('⚠️ No strokes to export');
+            return '';
+        }
+
+        // Calculate bounding box of all strokes (including stroke width)
+        let minX = Infinity;
+        let minY = Infinity;
+        let maxX = -Infinity;
+        let maxY = -Infinity;
+
+        strokes.forEach(stroke => {
+            const halfWidth = stroke.width / 2;
+            for (let i = 0; i < stroke.points.length; i += 2) {
+                const x = stroke.points[i];
+                const y = stroke.points[i + 1];
+                minX = Math.min(minX, x - halfWidth);
+                minY = Math.min(minY, y - halfWidth);
+                maxX = Math.max(maxX, x + halfWidth);
+                maxY = Math.max(maxY, y + halfWidth);
+            }
+        });
+
+        console.log('📏 Bounding box:', { minX, minY, maxX, maxY });
+
+        // Add padding
+        const padding = 50;
+        minX -= padding;
+        minY -= padding;
+        maxX += padding;
+        maxY += padding;
+
+        const width = maxX - minX;
+        const height = maxY - minY;
+
+        console.log('📐 Export dimensions:', { width, height });
+
+        // Create canvas directly
+        const canvas = document.createElement('canvas');
+        canvas.width = width * 2; // 2x for retina
+        canvas.height = height * 2;
+        const ctx = canvas.getContext('2d');
+
+        if (!ctx) return '';
+
+        // Scale for retina
+        ctx.scale(2, 2);
+
+        // Transparent background (no white fill so text shows through)
+        // ctx.fillStyle = 'white';
+        // ctx.fillRect(0, 0, width, height);
+
+        // Draw all strokes
+        strokes.forEach((stroke) => {
+            ctx.strokeStyle = stroke.color;
+            ctx.lineWidth = stroke.width;
+            ctx.lineCap = stroke.lineCap;
+            ctx.lineJoin = stroke.lineJoin;
+            ctx.globalCompositeOperation = stroke.tool === 'eraser' ? 'destination-out' : 'source-over';
+
+            ctx.beginPath();
+            for (let i = 0; i < stroke.points.length; i += 2) {
+                const x = stroke.points[i] - minX;
+                const y = stroke.points[i + 1] - minY;
+
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.stroke();
+        });
+
+        const dataURL = canvas.toDataURL('image/png');
+        console.log('✅ Export complete, data URL length:', dataURL.length);
+
+        return dataURL;
+    }, [strokes]);
 
     // Expose methods via ref
     useImperativeHandle(ref, () => ({

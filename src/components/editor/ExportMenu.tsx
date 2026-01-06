@@ -46,24 +46,45 @@ export default function ExportMenu({ editor, title, wordCount, isOpen, onClose, 
             titleEl.style.marginBottom = '20px';
             container.appendChild(titleEl);
 
+            // Wrap content in a positioned container for overlay
+            const contentWrapper = document.createElement('div');
+            contentWrapper.style.position = 'relative';
+            contentWrapper.style.minHeight = '500px';
+
             // Clone editor content
             const contentClone = editorElement.cloneNode(true) as HTMLElement;
-            container.appendChild(contentClone);
+            contentWrapper.appendChild(contentClone);
 
-            // Add ink layer if available
+            // Add ink layer as overlay if available
             if (inkCanvasRef?.current) {
-                const inkImageData = inkCanvasRef.current.exportToPNG();
+                const inkImageData = await inkCanvasRef.current.exportToPNG();
                 if (inkImageData) {
                     const inkImg = document.createElement('img');
                     inkImg.src = inkImageData;
+
+                    // Wait for image to load
+                    await new Promise((resolve) => {
+                        inkImg.onload = resolve;
+                    });
+
+                    // Calculate proper height based on image aspect ratio
+                    const containerWidth = 800;
+                    const aspectRatio = inkImg.naturalHeight / inkImg.naturalWidth;
+                    const calculatedHeight = containerWidth * aspectRatio;
+                    contentWrapper.style.minHeight = `${Math.max(500, calculatedHeight)}px`;
+
                     inkImg.style.position = 'absolute';
-                    inkImg.style.top = '80px'; // After title
-                    inkImg.style.left = '40px';
-                    inkImg.style.width = '720px';
+                    inkImg.style.top = '0';
+                    inkImg.style.left = '0';
+                    inkImg.style.width = '100%';
+                    inkImg.style.height = 'auto';
                     inkImg.style.pointerEvents = 'none';
-                    container.appendChild(inkImg);
+                    inkImg.style.zIndex = '10';
+                    contentWrapper.appendChild(inkImg);
                 }
             }
+
+            container.appendChild(contentWrapper);
 
             document.body.appendChild(container);
 
@@ -106,41 +127,21 @@ export default function ExportMenu({ editor, title, wordCount, isOpen, onClose, 
     const exportToWord = () => {
         if (!editor) return;
 
-        let inkImageHtml = '';
-
-        // Add ink layer if available
-        if (inkCanvasRef?.current) {
-            try {
-                const inkImageData = inkCanvasRef.current.exportToPNG();
-                if (inkImageData) {
-                    inkImageHtml = `<img src="${inkImageData}" style="position: absolute; top: 0; left: 0; width: 100%; height: auto; pointer-events: none; z-index: 10;" />`;
-                }
-            } catch (error) {
-                console.error('Failed to add ink layer to Word:', error);
-            }
-        }
-
         const htmlContent = `
             <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="utf-8">
-                <title>${title}</title>
-                <style>
-                    body { font-family: Arial, sans-serif; padding: 40px; }
-                    h1 { font-size: 24px; margin-bottom: 20px; }
-                    .content-wrapper { position: relative; }
-                </style>
-            </head>
-            <body>
+            <html xmlns:o='urn:schemas-microsoft-com:office:office'>
+            <head><meta charset="utf-8"><title>${title}</title></head>
+            <body style="font-family: Arial; padding: 40px;">
                 <h1>${title}</h1>
-                <div class="content-wrapper">
-                    ${editor.getHTML()}
-                    ${inkImageHtml}
-                </div>
+                ${editor.getHTML()}
+                <hr style="margin-top: 40px;">
+                <p style="font-size: 12px; color: #666; font-style: italic;">
+                    Note: Hand-drawn content is not included. Use PDF export to preserve drawings.
+                </p>
             </body>
             </html>
         `;
+
         const blob = new Blob([htmlContent], { type: 'application/msword' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
