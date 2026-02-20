@@ -191,7 +191,7 @@ export default function ForgotPasswordForm() {
 
                 {/* Footer */}
                 <div className="text-center text-xs text-[#8b7355] mt-8">
-                    © 2025 Crafted by Mayank Bhatgare ❣️ All rights reserved.
+                    © 2025 Crafted by Vivek❣️ All rights reserved.
                 </div>
             </div>
         </div>
