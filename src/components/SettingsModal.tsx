@@ -446,7 +446,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                             <p className="text-xs md:text-sm text-[#666] text-center mb-5 md:mb-6">
                                 Your changes are saved! But here's the thing... to see them <span className="font-bold">everywhere</span> (yes, including that stubborn dropdown), you'll need to log out and back in.
                                 <br /><br />
-                                I know, I know... it's 2025 and we still need to do this. Technology is amazing! 🙄
+                                I know, I know... it's 2026 and we still need to do this. Technology is amazing! 🙄
                             </p>
 
                             {/* Buttons */}
